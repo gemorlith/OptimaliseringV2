@@ -11,7 +11,7 @@
             this.op = op;
         }
         public override void Apply() {
-            s.setActive(true, op);
+            s.SetActive(true, op);
         }
         public override Neighbour Reverse() {
             return new DisableNeighbour(s, op);
@@ -24,7 +24,7 @@
             this.op = op;
         }
         public override void Apply() {
-            s.setActive(false, op);
+            s.SetActive(false, op);
         }
         public override Neighbour Reverse() {
             return new ActivateNeighbour(s, op);
@@ -34,35 +34,34 @@
         OrderPosition op;
         OrderPosition newPrevious;
         OrderPosition oldPrevious;
-        byte day, truck, cycle, oriDay, oriTruck, oriCycle;
-        public MoveNeighbour(OrderPosition op, OrderPosition previous, byte day, byte truck, byte cycle) {
+        byte day, truck, cycle, oldDay, oldTruck, oldCycle;
+        public MoveNeighbour(OrderPosition op, OrderPosition newPrevious, byte day, byte truck, byte cycle) {
             this.op = op;
-            this.newPrevious = previous;
+            this.newPrevious = newPrevious;
             this.day = day;
             this.truck = truck;
             this.cycle = cycle;
             oldPrevious = op.previous;
-            oriDay = op.day;
-            oriTruck = op.truck;
-            oriCycle = op.cycle;
+            oldDay = op.day;
+            oldTruck = op.truck;
+            oldCycle = op.cycle;
         }
         public override void Apply() {
             bool active = false;
             if (op.active) {
                 active = true;
-                s.setActive(false, op);
+                s.SetActive(false, op);
             }
             s.RemoveOrder(op);
             s.AddOrder(op, newPrevious, truck, day, cycle);
             if (active) {
-                s.setActive(true, op);
+                s.SetActive(true, op);
             }
         }
         public override Neighbour Reverse() {
-            return new MoveNeighbour(op, oldPrevious, oriDay, oriTruck, oriCycle);
+            return new MoveNeighbour(op, oldPrevious, oldDay, oldTruck, oldCycle);
         }
     }
-
     public class SwapNeighbour : Neighbour {
         OrderPosition op1;
         OrderPosition op2;

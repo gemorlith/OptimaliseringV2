@@ -327,28 +327,21 @@ namespace GroteOpdrachtV2 {
 
     public class EmptyGenerator : StartSolutionGenerator {
         public override Solution Generate() {
-            List<List<int>>[,] ol = new List<List<int>>[2, 5];
-            HashSet<int>[] pl = new HashSet<int>[5];
-            List<int> dc = new List<int>();
             double declineVal = 0;
             double[,] localtimes = new double[2, 5];
-            List<int>[,] cw = new List<int>[2, 5];
+            List<int>[,] cycleWeights = new List<int>[2, 5];
             List<OrderPosition>[,] firsts = new List<OrderPosition>[2, 5];
             for (int d = 0; d < 5; d++) {
-                pl[d] = new HashSet<int>();
                 for (int t = 0; t < 2; t++) {
-                    ol[t, d] = new List<List<int>>();
-                    cw[t, d] = new List<int>();
+                    cycleWeights[t, d] = new List<int>();
                     firsts[t, d] = new List<OrderPosition>();
                 }
             }
             List<OrderPosition> allPositions = new List<OrderPosition>();
             OrderPosition prev = null;
             foreach (Order o in Program.allOrders) {
-                dc.Add(o.ID);
                 declineVal += o.Time * 3 * o.Frequency;
-                OrderPosition newPos = new OrderPosition(o, 0, 0, 0, false);
-                newPos.previous = prev;
+                OrderPosition newPos = new OrderPosition(o, 0, 0, 0, false) { previous = prev };
                 if (prev != null) {
                     prev.next = newPos;
                 }
@@ -356,9 +349,9 @@ namespace GroteOpdrachtV2 {
                 allPositions.Add(newPos);
             }
             prev.next = null;
-            cw[0, 0].Add(0);
+            cycleWeights[0, 0].Add(0);
             firsts[0, 0].Add(allPositions[0]);
-            return new Solution(0, declineVal, 0, cw, localtimes, firsts, allPositions.ToArray());
+            return new Solution(0, declineVal, 0, cycleWeights, localtimes, firsts, allPositions.ToArray());
         }
     }
 

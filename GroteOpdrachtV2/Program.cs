@@ -110,6 +110,7 @@ namespace GroteOpdrachtV2 {
         }
         #endregion Setup
     }
+
     public class Order {
         public Order(int id, string place, byte frequency, byte containers, short containervolume, float time, short location) {
             ID = id;

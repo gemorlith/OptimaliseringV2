@@ -4,27 +4,40 @@ using System.Collections.Generic;
 namespace GroteOpdrachtV2 {
     public class Solution {
         public double timeValue, declineValue, penaltyValue;
-        List<int>[,] cycleWeights;
+        public List<Cycle>[,] cycles;
+        public List<Cycle> allCycles = new List<Cycle>();
         double[,] localTimes;
-        public List<OrderPosition>[,] firsts;
         public OrderPosition[] allPositions;
-        Order nextActive(OrderPosition o) {
+        public Solution(double timeValue, double declineValue, double penaltyValue, double[,] localTimes, List<Cycle>[,] cycles, OrderPosition[] allPositions) {
+            this.timeValue = timeValue;
+            this.declineValue = declineValue;
+            this.penaltyValue = penaltyValue;
+            this.localTimes = localTimes;
+            this.cycles = cycles;
+            this.allPositions = allPositions;
+            foreach (List<Cycle> cl in cycles) {
+                foreach (Cycle c in cl) {
+                    allCycles.Add(c);
+                }
+            }
+        }
+        private Order NextActive(OrderPosition o) {
             OrderPosition next = o.next;
             if (next == null) return Program.HomeOrder;
             if (next.active) return next.order;
-            return nextActive(next);
+            return NextActive(next);
         }
-        Order prevActive(OrderPosition o) {
+        private Order PrevActive(OrderPosition o) {
             OrderPosition prev = o.previous;
             if (prev == null) return Program.HomeOrder;
             if (prev.active) return prev.order;
-            return prevActive(prev);
+            return PrevActive(prev);
         }
         public double Value { get { return (timeValue + declineValue + penaltyValue) / 60; } }
-        public void setActive(bool setting, OrderPosition op) {
+        public void SetActive(bool setting, OrderPosition op) {
             op.active = setting;
-            Order prev = prevActive(op);
-            Order next = nextActive(op);
+            Order prev = PrevActive(op);
+            Order next = NextActive(op);
             int withoutTime = Program.paths[prev.Location].Paths[next.Location];
             int withTime = Program.paths[prev.Location].Paths[op.order.Location] + Program.paths[op.order.Location].Paths[next.Location];
             float time;
@@ -47,39 +60,37 @@ namespace GroteOpdrachtV2 {
             localTimes[truck, day] += time;
             timeValue += time;
             declineValue += decline;
-            cycleWeights[truck, day][op.cycle] += weight;
+            op.cycle.cycleWeight += weight;
 
-            int currentCycleWeight = cycleWeights[truck, day][op.cycle];
             penaltyValue += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
-            penaltyValue += Program.overWeightPenalty * (Math.Max(currentCycleWeight + weight - Program.MaxCarry, 0) - Math.Max(currentCycleWeight - Program.MaxCarry, 0));
+            penaltyValue += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
             if (penaltyValue < 0) {
-                throw new Exception("je hoofd");
+                throw new Exception("Penalty value lager dan nul wtfrick.");
             }
         }
         public void RemoveOrder(OrderPosition order) {
+            if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
             if (order.next != null) order.next.previous = order.previous;
             if (order.previous != null) order.previous.next = order.next;
 
-            if (order.next == null && order.previous == null) {
-                if (cycleWeights[order.truck, order.day][order.cycle] != 0) throw new Exception("yo shit broke");
-                firsts[order.truck, order.day].RemoveAt(order.cycle);
-                cycleWeights[order.truck, order.day].RemoveAt(order.cycle);
-            }
+            if (order.next == null && order.previous == null) RemoveCycle(order.cycle);
         }
-        public void AddOrder(OrderPosition order, OrderPosition previous, byte truck, byte day, byte cycle) {
+        public void AddOrder(OrderPosition order, OrderPosition previous, byte truck, byte day, Cycle cycle) {
+            if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
             order.previous = previous;
             if (previous != null) {
-                previous.next = order;
                 order.next = previous.next;
+                previous.next = order;
             }
             else {
-                if (firsts[truck, day].Count > cycle) {
-                    order.next = firsts[truck, day][0];
-                    firsts[truck, day][0] = order;
+                if (cycle != null) {
+                    order.next = cycle.first;
+                    cycle.first = order;
                 }
-                else {
-                    firsts[truck, day].Add(order);
-                    cycleWeights[truck, day].Add(0);
+                else { // Create new cycle
+                    cycle = AddCycle(day, truck);
+                    cycle.first = order;
+                    order.next = null;
                 }
             }
             if (order.next != null) order.next.previous = order;
@@ -88,14 +99,29 @@ namespace GroteOpdrachtV2 {
             order.truck = truck;
             order.cycle = cycle;
         }
-        public Solution(double timeValue, double declineValue, double penaltyValue, List<int>[,] cycleWeights, double[,] localTimes, List<OrderPosition>[,] firsts, OrderPosition[] allPositions) {
-            this.timeValue = timeValue;
-            this.declineValue = declineValue;
-            this.penaltyValue = penaltyValue;
-            this.cycleWeights = cycleWeights;
-            this.localTimes = localTimes;
-            this.firsts = firsts;
-            this.allPositions = allPositions;
+        public void RemoveCycle(Cycle cycle) {
+            if (cycle.first != null) throw new Exception("Do not remove a cycle that has active orders.");
+            if (cycle.cycleWeight != 0) throw new Exception("Cycle weight is not zero but the cycle has no active orders. Maybe consider fixing the software.");
+            allCycles.Remove(cycle);
+            cycles[cycle.truck, cycle.day].Remove(cycle);
+        }
+        public Cycle AddCycle(byte day, byte truck) {
+            Cycle c = new Cycle(day, truck, 0, null);
+            allCycles.Add(c);
+            cycles[truck, day].Add(c);
+            return c;
+        }
+    }
+
+    public class Cycle {
+        public byte day, truck;
+        public int cycleWeight;
+        public OrderPosition first;
+        public Cycle(byte day, byte truck, int cycleWeight, OrderPosition first) {
+            this.day = day;
+            this.truck = truck;
+            this.cycleWeight = cycleWeight;
+            this.first = first;
         }
     }
 
@@ -103,9 +129,10 @@ namespace GroteOpdrachtV2 {
         public Order order;
         public OrderPosition next;
         public OrderPosition previous;
-        public byte day, truck, cycle;
+        public Cycle cycle;
+        public byte day, truck;
         public bool active;
-        public OrderPosition(Order o, byte day, byte truck, byte cycle, bool active) {
+        public OrderPosition(Order o, byte day, byte truck, Cycle cycle, bool active) {
             order = o;
             this.day = day;
             this.truck = truck;
