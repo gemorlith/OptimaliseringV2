@@ -60,7 +60,7 @@ namespace GroteOpdrachtV2 {
             Console.ReadLine();
         }
 
-        #region setup
+        #region Setup
         static void GetDistances() {
             StreamReader sr = new StreamReader("../../Distances.txt");
             string input;
@@ -108,7 +108,7 @@ namespace GroteOpdrachtV2 {
             }
             orderByID.Add(0, new Order(0, "WHAT", 0, 0, 0, DisposalTime / 60, Home));
         }
-        #endregion setup
+        #endregion Setup
     }
     public class Order {
         public Order(int id, string place, byte frequency, byte containers, short containervolume, float time, short location) {
