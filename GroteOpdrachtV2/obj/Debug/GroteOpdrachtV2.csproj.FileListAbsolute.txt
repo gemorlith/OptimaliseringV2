@@ -1,7 +1,0 @@
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\bin\Debug\GroteOpdrachtV2.exe.config
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\bin\Debug\GroteOpdrachtV2.exe
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\bin\Debug\GroteOpdrachtV2.pdb
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\obj\Debug\GroteOpdrachtV2.csprojResolveAssemblyReference.cache
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\obj\Debug\GroteOpdrachtV2.csproj.CoreCompileInputs.cache
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\obj\Debug\GroteOpdrachtV2.exe
-C:\Users\Tijmen\source\repos\GroteOpdrachtV2\GroteOpdrachtV2\obj\Debug\GroteOpdrachtV2.pdb
