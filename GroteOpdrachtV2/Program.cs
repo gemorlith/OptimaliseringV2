@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Linq;
 
 namespace GroteOpdrachtV2 {
     class Program {
@@ -13,7 +11,7 @@ namespace GroteOpdrachtV2 {
         public const int saveFreq = 50; //saves solution in temp file every [pasteFreq * saveFreq] neighbours
         #endregion Debug
 
-        #region params
+        #region Parameters
         public static float annealingStartT = 0f;//150
         public static StartSolutionGenerator Generator = new EmptyGenerator();
         public static SearchType Searcher = new SimulatedAnnealingMK1();
@@ -24,24 +22,24 @@ namespace GroteOpdrachtV2 {
         public const double overWeightPenalty = 100;//>15
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 40000;
-        #endregion params
+        #endregion Parameters
 
-        #region consts
+        #region Constants
         public const int MaxCarry = 20000;
         public const int MaxTime = 12 * 60 * 60;
         public const short DisposalTime = 30 * 60;
         public const short Home = 287;
         public static Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
-        #endregion consts
+        #endregion Constants
 
-        #region variables
+        #region Variables
         public static double minValue = double.MaxValue;
         public static double unviableMinValue = double.MaxValue;
         public static Dictionary<short, DirectionList> paths = new Dictionary<short, DirectionList>();
         public static List<Order> allOrders = new List<Order>();
         public static Dictionary<int, Order> orderByID = new Dictionary<int, Order>();
         public static Random random = new Random();
-        #endregion variables
+        #endregion Variables
 
         static void Main(string[] args) {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");

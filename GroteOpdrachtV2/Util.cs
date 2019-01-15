@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace GroteOpdrachtV2 {
@@ -15,8 +12,8 @@ namespace GroteOpdrachtV2 {
             for (int d = 1; d <= 5; d++) {
                 for (int v = 1; v <= 2; v++) {
                     for (int c = 0; c < s.firsts[v - 1, d - 1].Count; c++) {
-                        OrderPosition current = s.firsts[v-1, d-1][c];
-                        while(current != null) {
+                        OrderPosition current = s.firsts[v - 1, d - 1][c];
+                        while (current != null) {
                             if (!current.active) {
                                 current = current.next;
                                 continue;

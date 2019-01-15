@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GroteOpdrachtV2 {
     public class Solution {
@@ -76,7 +73,7 @@ namespace GroteOpdrachtV2 {
                 order.next = previous.next;
             }
             else {
-                if (firsts[truck,day].Count > cycle) {
+                if (firsts[truck, day].Count > cycle) {
                     order.next = firsts[truck, day][0];
                     firsts[truck, day][0] = order;
                 }

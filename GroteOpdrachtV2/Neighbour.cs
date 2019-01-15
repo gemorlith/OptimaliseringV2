@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GroteOpdrachtV2 {
+﻿namespace GroteOpdrachtV2 {
     public abstract class Neighbour {
         protected Solution s;
         public abstract void Apply();
         public abstract Neighbour Reverse();
     }
-    public class ActivateNeighbour : Neighbour{
+    public class ActivateNeighbour : Neighbour {
         OrderPosition op;
         public ActivateNeighbour(Solution s, OrderPosition op) {
             this.s = s;
