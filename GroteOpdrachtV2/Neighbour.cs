@@ -34,8 +34,9 @@
         OrderPosition op;
         OrderPosition newPrevious;
         OrderPosition oldPrevious;
-        byte day, truck, cycle, oldDay, oldTruck, oldCycle;
-        public MoveNeighbour(OrderPosition op, OrderPosition newPrevious, byte day, byte truck, byte cycle) {
+        Cycle cycle, oldCycle;
+        byte day, truck, oldDay, oldTruck;
+        public MoveNeighbour(OrderPosition op, OrderPosition newPrevious, byte day, byte truck, Cycle cycle) {
             this.op = op;
             this.newPrevious = newPrevious;
             this.day = day;
@@ -71,7 +72,8 @@
         }
         public override void Apply() {
             OrderPosition prev1 = op1.previous;
-            byte day1 = op1.day, truck1 = op1.truck, cycle1 = op1.cycle;
+            Cycle cycle1 = op1.cycle;
+            byte day1 = op1.day, truck1 = op1.truck;
             MoveNeighbour move1 = new MoveNeighbour(op1, op2.previous, op2.day, op2.truck, op2.cycle);
             move1.Apply();
             MoveNeighbour move2 = new MoveNeighbour(op2, prev1, day1, truck1, cycle1);
