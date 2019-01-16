@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GroteOpdrachtV2 {
     public class Solution {
-        public double timeValue, declineValue, penaltyValue;
+        public double timeValue, declineValue, penaltyValue, tp, wp;
         public List<Cycle>[,] cycles;
         public List<Cycle> allCycles = new List<Cycle>();
         double[,] localTimes;
@@ -12,6 +12,7 @@ namespace GroteOpdrachtV2 {
             this.timeValue = timeValue;
             this.declineValue = declineValue;
             this.penaltyValue = penaltyValue;
+            tp = 0; wp = 0;
             this.localTimes = localTimes;
             this.cycles = cycles;
             this.allPositions = allPositions;
@@ -21,25 +22,33 @@ namespace GroteOpdrachtV2 {
                 }
             }
         }
-        private Order NextActive(OrderPosition o) {
+        public Order NextActive(OrderPosition o) {
             OrderPosition next = o.next;
             if (next == null) return Program.HomeOrder;
-            if (next.active) return next.order;
-            return NextActive(next);
+            if (next == next.next) throw new Exception("next.next is equal to next, that's a problem.");
+            while (!next.active) {
+                next = next.next;
+                if (next == null) return Program.HomeOrder;
+            }
+            return next.order;
         }
-        private Order PrevActive(OrderPosition o) {
+        public Order PrevActive(OrderPosition o) {
             OrderPosition prev = o.previous;
             if (prev == null) return Program.HomeOrder;
-            if (prev.active) return prev.order;
-            return PrevActive(prev);
+            if (prev == prev.previous) throw new Exception("previous.previous is equal to previous, that's a problem.");
+            while (!prev.active) {
+                prev = prev.previous;
+                if (prev == null) return Program.HomeOrder;
+            }
+            return prev.order;
         }
         public double Value { get { return (timeValue + declineValue + penaltyValue) / 60; } }
         public void SetActive(bool setting, OrderPosition op) {
             op.active = setting;
             Order prev = PrevActive(op);
             Order next = NextActive(op);
-            int withoutTime = Program.paths[prev.Location].Paths[next.Location];
-            int withTime = Program.paths[prev.Location].Paths[op.order.Location] + Program.paths[op.order.Location].Paths[next.Location];
+            int withoutTime = Util.PathValue(prev.Location, next.Location);
+            int withTime = Util.PathValue(prev.Location, op.order.Location) + Util.PathValue(op.order.Location, next.Location);
             float time;
             int truck = op.truck;
             int day = op.day;
@@ -61,17 +70,17 @@ namespace GroteOpdrachtV2 {
             timeValue += time;
             declineValue += decline;
             op.cycle.cycleWeight += weight;
-
-            penaltyValue += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
-            penaltyValue += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
-            if (penaltyValue < 0) {
-                throw new Exception("Penalty value lager dan nul wtfrick.");
-            }
+            tp += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
+            wp += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
+            penaltyValue = tp + wp;
+            if (penaltyValue < 0) throw new Exception("Penalty value lager dan nul wtfrick.");
+            Util.Test(this, "After (de)activation");
         }
         public void RemoveOrder(OrderPosition order) {
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
             if (order.next != null) order.next.previous = order.previous;
             if (order.previous != null) order.previous.next = order.next;
+            else order.cycle.first = order.next;
 
             if (order.next == null && order.previous == null) RemoveCycle(order.cycle);
         }
@@ -79,6 +88,9 @@ namespace GroteOpdrachtV2 {
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
             order.previous = previous;
             if (previous != null) {
+                if (truck != previous.truck ||
+                    day != previous.day ||
+                    cycle != previous.cycle) throw new Exception("Truck, day or cycle doesn't match.");
                 order.next = previous.next;
                 previous.next = order;
             }

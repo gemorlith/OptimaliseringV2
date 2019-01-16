@@ -38,6 +38,7 @@ namespace GroteOpdrachtV2 {
         public virtual void SearchFrom(Solution s) {
             Compare(s);
             while (counter < Program.maxIterations) {
+                Util.Test(s, "Voor TryNeighbour");
                 TryNeighbour(s);
                 Compare(s);
                 counter++;
@@ -70,11 +71,15 @@ namespace GroteOpdrachtV2 {
             Neighbour n = ns.RndNeighbour(s);
             if (n == null) return;
             double oldValue = s.Value;
+            double opv = s.penaltyValue;
+            double odv = s.declineValue;
+            double otv = s.timeValue;
             n.Apply();
-            double gain = oldValue - s.Value;
+            double gain = s.Value - oldValue;
             if (gain > 0f && !ApplyNegativeAnyways(gain)) {
+                double newValue = s.Value;
                 n.Reverse().Apply();
-                if (s.Value != oldValue) throw new Exception("values aren't equal, incorrect reversion? or rounding error?");
+                if (s.Value != oldValue) Util.Test(s, "In TryNeighbour");
             }
         }
         protected override void Reset() {

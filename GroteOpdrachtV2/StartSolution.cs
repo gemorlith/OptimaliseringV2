@@ -329,19 +329,18 @@ namespace GroteOpdrachtV2 {
         public override Solution Generate() {
             double declineVal = 0;
             double[,] localtimes = new double[2, 5];
-            List<int>[,] cycleWeights = new List<int>[2, 5];
-            List<OrderPosition>[,] firsts = new List<OrderPosition>[2, 5];
+            List<Cycle>[,] cycles = new List<Cycle>[2, 5];
             for (int d = 0; d < 5; d++) {
                 for (int t = 0; t < 2; t++) {
-                    cycleWeights[t, d] = new List<int>();
-                    firsts[t, d] = new List<OrderPosition>();
+                    cycles[t, d] = new List<Cycle>();
                 }
             }
             List<OrderPosition> allPositions = new List<OrderPosition>();
             OrderPosition prev = null;
+            Cycle c = new Cycle(0, 0, 0, null);
             foreach (Order o in Program.allOrders) {
                 declineVal += o.Time * 3 * o.Frequency;
-                OrderPosition newPos = new OrderPosition(o, 0, 0, 0, false) { previous = prev };
+                OrderPosition newPos = new OrderPosition(o, 0, 0, c, false) { previous = prev };
                 if (prev != null) {
                     prev.next = newPos;
                 }
@@ -349,9 +348,9 @@ namespace GroteOpdrachtV2 {
                 allPositions.Add(newPos);
             }
             prev.next = null;
-            cycleWeights[0, 0].Add(0);
-            firsts[0, 0].Add(allPositions[0]);
-            return new Solution(0, declineVal, 0, cycleWeights, localtimes, firsts, allPositions.ToArray());
+            c.first = allPositions[0];
+            cycles[0, 0].Add(c);
+            return new Solution(0, declineVal, 0, localtimes, cycles, allPositions.ToArray());
         }
     }
 

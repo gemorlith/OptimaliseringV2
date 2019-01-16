@@ -10,15 +10,16 @@ namespace GroteOpdrachtV2 {
             StreamWriter sw = new StreamWriter(path) { AutoFlush = true };
             int counter = 0;
             for (int d = 1; d <= 5; d++) {
-                for (int v = 1; v <= 2; v++) {
-                    for (int c = 0; c < s.firsts[v - 1, d - 1].Count; c++) {
-                        OrderPosition current = s.firsts[v - 1, d - 1][c];
+                for (int t = 1; t <= 2; t++) {
+                    int max = s.cycles[t - 1, d - 1].Count;
+                    for (int c = 0; c < max; c++) {
+                        OrderPosition current = s.cycles[t - 1, d - 1][c].first;
                         while (current != null) {
                             if (!current.active) {
                                 current = current.next;
                                 continue;
                             }
-                            sw.Write(v); // Vehicle
+                            sw.Write(t); // Vehicle
                             sw.Write(';');
                             sw.Write(d); // Day
                             sw.Write(';');
@@ -29,7 +30,7 @@ namespace GroteOpdrachtV2 {
                             counter++;
                             current = current.next;
                         }
-                        sw.Write(v); // Vehicle
+                        sw.Write(t); // Vehicle
                         sw.Write(';');
                         sw.Write(d); // Day
                         sw.Write(';');
@@ -118,6 +119,60 @@ namespace GroteOpdrachtV2 {
                 }
             }
             return days;
+        }
+
+        public static int PathValue(short from, short to) {
+            if (from == to) return 0;
+            return Program.paths[from].Paths[to];
+        }
+
+        public static bool Test(Solution s, string message = "") {
+            Console.WriteLine(message);
+            bool different = false;
+            double tv = 0, dv = 0, tp = 0, wp = 0;
+            double[,] locTim = new double[2, 5];
+            Dictionary<Cycle, int> cycWe = new Dictionary<Cycle, int>();
+            foreach (OrderPosition op in s.allPositions) {
+                if (op.active) {
+                    locTim[op.truck, op.day] += PathValue(op.order.Location, s.NextActive(op).Location);
+                    locTim[op.truck, op.day] += op.order.Time;
+                    if (!cycWe.ContainsKey(op.cycle)) cycWe.Add(op.cycle, 0);
+                    cycWe[op.cycle] += op.order.ContainerVolume;
+                }
+                else {
+                    dv += op.order.Time * 3 * op.order.Frequency;
+                }
+            }
+            foreach (Cycle c in s.allCycles) {
+                Order act;
+                if (c.first.active) act = c.first.order; 
+                else {
+                    act = s.NextActive(c.first);                    
+                }
+                locTim[c.truck, c.day] += PathValue(Program.Home, act.Location);
+                if (act != Program.HomeOrder) locTim[c.truck, c.day] += Program.DisposalTime;
+
+                if (cycWe.ContainsKey(c)) wp += Program.overWeightPenalty * Math.Max(cycWe[c] - Program.MaxCarry, 0);
+            }
+            for (int t = 0; t < 2; t++) {
+                for (int d = 0; d < 5; d++) {
+                    tv += locTim[t, d];
+                    tp += Program.overTimePenalty * Math.Max(locTim[t, d] - Program.MaxTime, 0);
+                }
+            }
+            if (NotTheSameISwear(tv, s.timeValue)) { Console.WriteLine("TimeValue should be " + tv + " but it is " + s.timeValue + "; difference: " + -(tv - s.timeValue)); different = true; }
+            if (NotTheSameISwear(dv, s.declineValue)) { Console.WriteLine("DeclineValue should be " + dv + " but it is " + s.declineValue + "; difference: " + -(dv - s.declineValue)); different = true; }
+            if (NotTheSameISwear(tp, s.tp)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.tp + "; difference: " + -(tp - s.tp)); different = true; }
+            if (NotTheSameISwear(wp, s.wp)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.wp + "; difference: " + -(wp - s.wp)); different = true; }
+            //if (different) throw new Exception("One or more values were inequal; check console.");
+            if (different) {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool NotTheSameISwear(double one, double theOther) {
+            return one > theOther + .5 || one < theOther - .5;
         }
     }
 }

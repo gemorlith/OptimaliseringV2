@@ -12,7 +12,7 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = 0f;//150
+        public static float annealingStartT = 50f;//150
         public static StartSolutionGenerator Generator = new EmptyGenerator();
         public static SearchType Searcher = new SimulatedAnnealingMK1();
         public const int maxIterations = 50000000;//10000000?
@@ -46,7 +46,8 @@ namespace GroteOpdrachtV2 {
             GetDistances();
             GetOrders();
             neighbourOptions = new List<ValuePerNeighbour> {
-                new ValuePerNeighbour(1f, new ToggleSpace()),
+                new ValuePerNeighbour(1f, new ToggleSpace())//,
+                //new ValuePerNeighbour(.5f, new MoveSpace())
             };
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();

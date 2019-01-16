@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace GroteOpdrachtV2 {
+﻿namespace GroteOpdrachtV2 {
     public struct ValuePerNeighbour {
         public float value;
         public NeighbourSpace type;
@@ -36,23 +34,23 @@ namespace GroteOpdrachtV2 {
             OrderPosition prev;
             Cycle cycle;
             byte truck, day;
-            if (rnd < solution.allPositions.Length) {
+            if (rnd < solution.allPositions.Length) { // Move to after an existing order
                 prev = solution.allPositions[rnd];
-                cycle = null;
-                truck = 0; day = 0;
+                cycle = prev.cycle;
+                truck = prev.truck; day = prev.day;
             }
-            else if (rnd < solution.allPositions.Length + solution.allCycles.Count) {
+            else if (rnd < solution.allPositions.Length + solution.allCycles.Count) { // Move to beginning of existing cycle
                 prev = null;
                 cycle = solution.allCycles[rnd - solution.allPositions.Length];
                 truck = cycle.truck; day = cycle.day;
             }
-            else {
+            else { // Create new cycle
                 prev = null;
                 cycle = null;
                 int truckday = rnd - solution.allPositions.Length - solution.allCycles.Count;
                 truck = (byte)(truckday % 2); day = (byte)(truckday % 5);
             }
-            return new MoveNeighbour(op, prev, day, truck, cycle);
+            return new MoveNeighbour(solution, op, prev, day, truck, cycle);
         }
     }
 }
