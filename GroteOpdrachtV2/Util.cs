@@ -138,6 +138,9 @@ namespace GroteOpdrachtV2 {
                     locTim[op.truck, op.day] += op.order.Time;
                     if (!cycWe.ContainsKey(op.cycle)) cycWe.Add(op.cycle, 0);
                     cycWe[op.cycle] += op.order.ContainerVolume;
+                    if (!s.allCycles.Contains(op.cycle)) {
+                        Console.WriteLine("OhNo");
+                    }
                 }
                 else {
                     dv += op.order.Time * 3 * op.order.Frequency;
@@ -164,7 +167,10 @@ namespace GroteOpdrachtV2 {
             if (!TheSameISwear(dv, s.declineValue)) { Console.WriteLine("DeclineValue should be " + dv + " but it is " + s.declineValue + "; difference: " + -(dv - s.declineValue)); different = true; }
             if (!TheSameISwear(tp, s.tp)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.tp + "; difference: " + -(tp - s.tp)); different = true; }
             if (!TheSameISwear(wp, s.wp)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.wp + "; difference: " + -(wp - s.wp)); different = true; }
-            //if (different) throw new Exception("One or more values were inequal; check console.");
+            //if (different) {throw new Exception("One or more values were inequal; check console."); }
+            if (different) {
+                Console.WriteLine("yee");
+            }
             return different;
         }
 

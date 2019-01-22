@@ -1,4 +1,6 @@
-﻿namespace GroteOpdrachtV2 {
+﻿using System;
+using System.Collections.Generic;
+namespace GroteOpdrachtV2 {
     public abstract class Neighbour {
         protected Solution s;
         public abstract void Apply();

@@ -77,7 +77,7 @@ namespace GroteOpdrachtV2 {
             string yeet;
             if (setting) yeet = "Na activatie";
             else yeet = "Na deactivatie";
-            Util.Test(this, yeet, false);
+            //Util.Test(this, yeet, false);
         }
         public void RemoveOrder(OrderPosition order) {
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
@@ -86,12 +86,13 @@ namespace GroteOpdrachtV2 {
             else order.cycle.first = order.next;
 
             if (order.next == null && order.previous == null) RemoveCycle(order.cycle);
-            Util.CheckPrevAndNextForLoops(order.next);
-            Util.CheckPrevAndNextForLoops(order.previous);
+            //Util.CheckPrevAndNextForLoops(order.next);
+            //Util.CheckPrevAndNextForLoops(order.previous);
         }
         public void AddOrder(OrderPosition order, OrderPosition previous, byte truck, byte day, Cycle cycle) {
             if (previous == order) throw new Exception("Je probeert het order na zichzelf te plaatsen, doe maar niet!");
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
+            if (cycle != null && cycle.first == null) cycle = AddCycle(day, truck);
             order.previous = previous;
             if (previous != null) {
                 if (truck != previous.truck ||
@@ -116,7 +117,7 @@ namespace GroteOpdrachtV2 {
             order.day = day;
             order.truck = truck;
             order.cycle = cycle;
-            Util.CheckPrevAndNextForLoops(order);
+            //Util.CheckPrevAndNextForLoops(order);
         }
         public void RemoveCycle(Cycle cycle) {
             if (cycle.first != null) throw new Exception("Do not remove a cycle that has active orders.");

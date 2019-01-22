@@ -12,16 +12,16 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = 50f;//150
+        public static float annealingStartT = 200f;//150
         public static StartSolutionGenerator Generator = new EmptyGenerator();
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const int maxIterations = 50000000;//10000000?
+        public const int maxIterations = 500000000;//10000000?
         public const double annealingQPerNSSize = 8;//8
         public const float alpha = 0.995f;//0.99
         public const double overTimePenalty = 8;//?
         public const double overWeightPenalty = 100;//>15
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
-        public static int complexityEstimate = 40000;
+        public static int complexityEstimate = 20000;
         #endregion Parameters
 
         #region Constants
@@ -46,8 +46,8 @@ namespace GroteOpdrachtV2 {
             GetDistances();
             GetOrders();
             neighbourOptions = new List<ValuePerNeighbour> {
-                new ValuePerNeighbour(.5f, new ToggleSpace()),
-                new ValuePerNeighbour(.5f, new MoveSpace())
+                new ValuePerNeighbour(0.5f, new ToggleSpace()),
+                new ValuePerNeighbour(0.5f, new MoveSpace())
             };
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();

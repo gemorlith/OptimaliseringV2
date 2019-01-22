@@ -38,7 +38,7 @@ namespace GroteOpdrachtV2 {
         public virtual void SearchFrom(Solution s) {
             Compare(s);
             while (counter < Program.maxIterations) {
-                Util.Test(s, "Voor TryNeighbour", false);
+                //Util.Test(s, "Voor TryNeighbour", false);
                 TryNeighbour(s);
                 Compare(s);
                 counter++;
@@ -79,7 +79,7 @@ namespace GroteOpdrachtV2 {
             if (gain > 0f && !ApplyNegativeAnyways(gain)) {
                 double newValue = s.Value;
                 n.Reverse().Apply();
-                if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
+                //if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
             }
         }
         protected override void Reset() {
