@@ -45,7 +45,7 @@ namespace GroteOpdrachtV2 {
                 if (counter % Program.pasteFreq == 0) {
                     if (counter % (Program.pasteFreq * Program.saveFreq) == 0) {
                         Util.SaveSolution(s, "../../Solutions/Temp.txt");
-                        Console.WriteLine("Saved in Temp.txt");
+                        Console.WriteLine("Opgeslagen in Temp.txt");
                     }
                     Console.WriteLine(StatusString(s));
                 }

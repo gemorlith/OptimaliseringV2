@@ -165,10 +165,7 @@ namespace GroteOpdrachtV2 {
             if (!TheSameISwear(tp, s.tp)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.tp + "; difference: " + -(tp - s.tp)); different = true; }
             if (!TheSameISwear(wp, s.wp)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.wp + "; difference: " + -(wp - s.wp)); different = true; }
             //if (different) throw new Exception("One or more values were inequal; check console.");
-            if (different) {
-                return true;
-            }
-            return false;
+            return different;
         }
 
         public static bool TheSameISwear(double one, double theOther) {

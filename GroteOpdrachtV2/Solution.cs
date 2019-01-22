@@ -74,7 +74,7 @@ namespace GroteOpdrachtV2 {
             wp += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
             penaltyValue = tp + wp;
             if (penaltyValue < 0) throw new Exception("Penalty value lager dan nul wtfrick.");
-            Util.Test(this, "After (de)activation");
+            Util.Test(this, "Na (de)activatie");
         }
         public void RemoveOrder(OrderPosition order) {
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
