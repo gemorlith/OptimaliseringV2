@@ -160,10 +160,10 @@ namespace GroteOpdrachtV2 {
                     tp += Program.overTimePenalty * Math.Max(locTim[t, d] - Program.MaxTime, 0);
                 }
             }
-            if (NotTheSameISwear(tv, s.timeValue)) { Console.WriteLine("TimeValue should be " + tv + " but it is " + s.timeValue + "; difference: " + -(tv - s.timeValue)); different = true; }
-            if (NotTheSameISwear(dv, s.declineValue)) { Console.WriteLine("DeclineValue should be " + dv + " but it is " + s.declineValue + "; difference: " + -(dv - s.declineValue)); different = true; }
-            if (NotTheSameISwear(tp, s.tp)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.tp + "; difference: " + -(tp - s.tp)); different = true; }
-            if (NotTheSameISwear(wp, s.wp)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.wp + "; difference: " + -(wp - s.wp)); different = true; }
+            if (!TheSameISwear(tv, s.timeValue)) { Console.WriteLine("TimeValue should be " + tv + " but it is " + s.timeValue + "; difference: " + -(tv - s.timeValue)); different = true; }
+            if (!TheSameISwear(dv, s.declineValue)) { Console.WriteLine("DeclineValue should be " + dv + " but it is " + s.declineValue + "; difference: " + -(dv - s.declineValue)); different = true; }
+            if (!TheSameISwear(tp, s.tp)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.tp + "; difference: " + -(tp - s.tp)); different = true; }
+            if (!TheSameISwear(wp, s.wp)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.wp + "; difference: " + -(wp - s.wp)); different = true; }
             //if (different) throw new Exception("One or more values were inequal; check console.");
             if (different) {
                 return true;
@@ -171,8 +171,8 @@ namespace GroteOpdrachtV2 {
             return false;
         }
 
-        public static bool NotTheSameISwear(double one, double theOther) {
-            return one > theOther + .5 || one < theOther - .5;
+        public static bool TheSameISwear(double one, double theOther) {
+            return one < theOther + .5 && one > theOther - .5;
         }
     }
 }
