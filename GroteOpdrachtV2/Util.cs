@@ -126,8 +126,8 @@ namespace GroteOpdrachtV2 {
             return Program.paths[from].Paths[to];
         }
 
-        public static bool Test(Solution s, string message = "") {
-            Console.WriteLine(message);
+        public static bool Test(Solution s, string message = "", bool print = true) {
+            if (print) Console.WriteLine(message);
             bool different = false;
             double tv = 0, dv = 0, tp = 0, wp = 0;
             double[,] locTim = new double[2, 5];
@@ -170,6 +170,14 @@ namespace GroteOpdrachtV2 {
 
         public static bool TheSameISwear(double one, double theOther) {
             return one < theOther + .5 && one > theOther - .5;
+        }
+
+        public static void CheckPrevAndNextForLoops(OrderPosition o) {
+            if (o == null) return;
+            if (o.previous == o) throw new Exception("AAAAAAAAA");
+            if (o.next == o) throw new Exception("AAaAAAaAA");
+            if (o.previous != null) if (o.previous.next != o) throw new Exception("AAAAAAAAAA?");
+            if (o.next != null) if (o.next.previous != o) throw new Exception("AAaaAAAaAA?");
         }
     }
 }

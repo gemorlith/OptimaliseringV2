@@ -27,10 +27,11 @@
             return false;
         }
         public override Neighbour RndNeighbour(Solution solution) {
-            int rnd = (int)(Util.Rnd * solution.allPositions.Length);
-            OrderPosition op = solution.allPositions[rnd];
-            int amount = solution.allPositions.Length + solution.allCycles.Count + 10;
-            rnd = (int)(Util.Rnd * amount);
+            int ind = (int)(Util.Rnd * solution.allPositions.Length);
+            OrderPosition op = solution.allPositions[ind];
+            int amount = solution.allPositions.Length - 1 + solution.allCycles.Count + 10;
+            int rnd = (int)(Util.Rnd * amount);
+            if (rnd >= ind) rnd++;
             OrderPosition prev;
             Cycle cycle;
             byte truck, day;

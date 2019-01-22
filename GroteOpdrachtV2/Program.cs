@@ -46,8 +46,8 @@ namespace GroteOpdrachtV2 {
             GetDistances();
             GetOrders();
             neighbourOptions = new List<ValuePerNeighbour> {
-                new ValuePerNeighbour(1f, new ToggleSpace())//,
-                //new ValuePerNeighbour(.5f, new MoveSpace())
+                new ValuePerNeighbour(.5f, new ToggleSpace()),
+                new ValuePerNeighbour(.5f, new MoveSpace())
             };
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();

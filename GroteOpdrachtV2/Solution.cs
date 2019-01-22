@@ -57,24 +57,27 @@ namespace GroteOpdrachtV2 {
             if (setting) {
                 time = op.order.Time + withTime - withoutTime;
                 weight = op.order.ContainerVolume;
-                decline = -op.order.Time * 3;
+                decline = -op.order.Time * 3 * op.order.Frequency;
                 if (prev == Program.HomeOrder && next == Program.HomeOrder) time += Program.HomeOrder.Time;
             }
             else {
                 time = -op.order.Time + withoutTime - withTime;
                 weight = -op.order.ContainerVolume;
-                decline = op.order.Time * 3;
+                decline = op.order.Time * 3 * op.order.Frequency;
                 if (prev == Program.HomeOrder && next == Program.HomeOrder) time -= Program.HomeOrder.Time;
             }
-            localTimes[truck, day] += time;
             timeValue += time;
             declineValue += decline;
-            op.cycle.cycleWeight += weight;
             tp += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
             wp += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
             penaltyValue = tp + wp;
+            localTimes[truck, day] += time;
+            op.cycle.cycleWeight += weight;
             if (penaltyValue < 0) throw new Exception("Penalty value lager dan nul wtfrick.");
-            Util.Test(this, "Na (de)activatie");
+            string yeet;
+            if (setting) yeet = "Na activatie";
+            else yeet = "Na deactivatie";
+            Util.Test(this, yeet, false);
         }
         public void RemoveOrder(OrderPosition order) {
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
@@ -83,8 +86,11 @@ namespace GroteOpdrachtV2 {
             else order.cycle.first = order.next;
 
             if (order.next == null && order.previous == null) RemoveCycle(order.cycle);
+            Util.CheckPrevAndNextForLoops(order.next);
+            Util.CheckPrevAndNextForLoops(order.previous);
         }
         public void AddOrder(OrderPosition order, OrderPosition previous, byte truck, byte day, Cycle cycle) {
+            if (previous == order) throw new Exception("Je probeert het order na zichzelf te plaatsen, doe maar niet!");
             if (order.active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
             order.previous = previous;
             if (previous != null) {
@@ -110,6 +116,7 @@ namespace GroteOpdrachtV2 {
             order.day = day;
             order.truck = truck;
             order.cycle = cycle;
+            Util.CheckPrevAndNextForLoops(order);
         }
         public void RemoveCycle(Cycle cycle) {
             if (cycle.first != null) throw new Exception("Do not remove a cycle that has active orders.");

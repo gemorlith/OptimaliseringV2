@@ -49,16 +49,11 @@
             oldCycle = op.cycle;
         }
         public override void Apply() {
-            bool active = false;
-            if (op.active) {
-                active = true;
-                s.SetActive(false, op);
-            }
+            bool active = op.active;
+            if (active) s.SetActive(false, op);
             s.RemoveOrder(op);
             s.AddOrder(op, newPrevious, truck, day, cycle);
-            if (active) {
-                s.SetActive(true, op);
-            }
+            if (active) s.SetActive(true, op);
         }
         public override Neighbour Reverse() {
             return new MoveNeighbour(s, op, oldPrevious, oldDay, oldTruck, oldCycle);
