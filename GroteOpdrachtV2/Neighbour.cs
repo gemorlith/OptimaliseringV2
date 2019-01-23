@@ -51,7 +51,7 @@ namespace GroteOpdrachtV2 {
             oldCycle = op.cycle;
         }
         public override void Apply() {
-            bool active = op.active;
+            bool active = op.Active;
             if (active) s.SetActive(false, op);
             s.RemoveOrder(op);
             s.AddOrder(op, newPrevious, truck, day, cycle);

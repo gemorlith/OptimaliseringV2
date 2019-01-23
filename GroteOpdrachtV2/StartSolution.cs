@@ -335,22 +335,23 @@ namespace GroteOpdrachtV2 {
                     cycles[t, d] = new List<Cycle>();
                 }
             }
-            List<OrderPosition> allPositions = new List<OrderPosition>();
-            OrderPosition prev = null;
             Cycle c = new Cycle(0, 0, 0, null);
+            OrderPosition prev = null;
             foreach (Order o in Program.allOrders) {
                 declineVal += o.Time * 3 * o.Frequency;
-                OrderPosition newPos = new OrderPosition(o, 0, 0, c, false) { previous = prev };
+            }
+            foreach (OrderPosition op in Program.allPositions) {
+                op.cycle = c;
+                op.previous = prev;
                 if (prev != null) {
-                    prev.next = newPos;
+                    prev.next = op;
                 }
-                prev = newPos;
-                allPositions.Add(newPos);
+                prev = op;
             }
             prev.next = null;
-            c.first = allPositions[0];
+            c.first = Program.allPositions[0];
             cycles[0, 0].Add(c);
-            return new Solution(0, declineVal, 0, localtimes, cycles, allPositions.ToArray());
+            return new Solution(0, declineVal, 0, localtimes, cycles);
         }
     }
 

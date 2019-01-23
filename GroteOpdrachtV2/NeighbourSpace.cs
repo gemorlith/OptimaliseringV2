@@ -16,9 +16,9 @@
             return false;
         }
         public override Neighbour RndNeighbour(Solution solution) {
-            int rnd = (int)(Util.Rnd * solution.allPositions.Length);
-            OrderPosition op = solution.allPositions[rnd];
-            if (op.active) return new DisableNeighbour(solution, op);
+            int rnd = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition op = Program.allPositions[rnd];
+            if (op.Active) return new DisableNeighbour(solution, op);
             return new ActivateNeighbour(solution, op);
         }
     }
@@ -27,28 +27,28 @@
             return false;
         }
         public override Neighbour RndNeighbour(Solution solution) {
-            int ind = (int)(Util.Rnd * solution.allPositions.Length);
-            OrderPosition op = solution.allPositions[ind];
-            int amount = solution.allPositions.Length - 1 + solution.allCycles.Count + 10;
+            int ind = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition op = Program.allPositions[ind];
+            int amount = Program.allPositions.Length - 1 + solution.allCycles.Count + 10;
             int rnd = (int)(Util.Rnd * amount);
             if (rnd >= ind) rnd++;
             OrderPosition prev;
             Cycle cycle;
             byte truck, day;
-            if (rnd < solution.allPositions.Length) { // Move to after an existing order
-                prev = solution.allPositions[rnd];
+            if (rnd < Program.allPositions.Length) { // Move to after an existing order
+                prev = Program.allPositions[rnd];
                 cycle = prev.cycle;
                 truck = prev.truck; day = prev.day;
             }
-            else if (rnd < solution.allPositions.Length + solution.allCycles.Count) { // Move to beginning of existing cycle
+            else if (rnd < Program.allPositions.Length + solution.allCycles.Count) { // Move to beginning of existing cycle
                 prev = null;
-                cycle = solution.allCycles[rnd - solution.allPositions.Length];
+                cycle = solution.allCycles[rnd - Program.allPositions.Length];
                 truck = cycle.truck; day = cycle.day;
             }
             else { // Create new cycle
                 prev = null;
                 cycle = null;
-                int truckday = rnd - solution.allPositions.Length - solution.allCycles.Count;
+                int truckday = rnd - Program.allPositions.Length - solution.allCycles.Count;
                 truck = (byte)(truckday % 2); day = (byte)(truckday % 5);
             }
             return new MoveNeighbour(solution, op, prev, day, truck, cycle);

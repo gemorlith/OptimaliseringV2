@@ -7,7 +7,7 @@ namespace GroteOpdrachtV2 {
     class Program {
 
         #region Debug
-        public const int pasteFreq = 10000;
+        public const int pasteFreq = 100000;
         public const int saveFreq = 50; //saves solution in temp file every [pasteFreq * saveFreq] neighbours
         #endregion Debug
 
@@ -20,6 +20,8 @@ namespace GroteOpdrachtV2 {
         public const float alpha = 0.995f;//0.99
         public const double overTimePenalty = 8;//?
         public const double overWeightPenalty = 100;//>15
+        public const double wrongFreqPenalty = 10000;//10000
+        public const double wrongDayPentaly = 10000;//10000
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
         #endregion Parameters
@@ -37,6 +39,7 @@ namespace GroteOpdrachtV2 {
         public static double unviableMinValue = double.MaxValue;
         public static Dictionary<short, DirectionList> paths = new Dictionary<short, DirectionList>();
         public static List<Order> allOrders = new List<Order>();
+        public static OrderPosition[] allPositions;
         public static Dictionary<int, Order> orderByID = new Dictionary<int, Order>();
         public static Random random = new Random();
         #endregion Variables
@@ -108,25 +111,17 @@ namespace GroteOpdrachtV2 {
                 paths[location].YCoord = yCoordinate;
             }
             orderByID.Add(0, new Order(0, "WHAT", 0, 0, 0, DisposalTime / 60, Home));
+            List<OrderPosition> opList = new List<OrderPosition>();
+            foreach (Order o in allOrders) {
+                for (int i = 0; i < o.Frequency; i++) {
+                    OrderPosition op = new OrderPosition(o, 0, 0, null, false);
+                    opList.Add(op);
+                    o.Positions[i] = op;
+                }
+            }
+            allPositions = opList.ToArray();
         }
         #endregion Setup
-    }
-
-    public class Order {
-        public Order(int id, string place, byte frequency, byte containers, short containervolume, float time, short location) {
-            ID = id;
-            Place = place;
-            Frequency = frequency;
-            ContainerVolume = (short)(containervolume * containers / 5);
-            Time = 60 * time;
-            Location = location;
-        }
-        public int ID { get; set; }
-        public string Place { get; set; }
-        public byte Frequency { get; set; }
-        public short ContainerVolume { get; set; }
-        public float Time { get; set; }
-        public short Location { get; set; }
     }
 
     public class DirectionList {

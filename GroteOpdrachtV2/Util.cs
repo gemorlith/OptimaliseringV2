@@ -14,11 +14,13 @@ namespace GroteOpdrachtV2 {
                     int max = s.cycles[t - 1, d - 1].Count;
                     for (int c = 0; c < max; c++) {
                         OrderPosition current = s.cycles[t - 1, d - 1][c].first;
+                        bool active = false;
                         while (current != null) {
-                            if (!current.active) {
+                            if (!current.Active) {
                                 current = current.next;
                                 continue;
                             }
+                            active = true;
                             sw.Write(t); // Vehicle
                             sw.Write(';');
                             sw.Write(d); // Day
@@ -30,15 +32,17 @@ namespace GroteOpdrachtV2 {
                             counter++;
                             current = current.next;
                         }
-                        sw.Write(t); // Vehicle
-                        sw.Write(';');
-                        sw.Write(d); // Day
-                        sw.Write(';');
-                        sw.Write(counter + 1); // Sequence number
-                        sw.Write(';');
-                        sw.Write(0); // Order ID
-                        sw.WriteLine();
-                        counter++;
+                        if (active) {
+                            sw.Write(t); // Vehicle
+                            sw.Write(';');
+                            sw.Write(d); // Day
+                            sw.Write(';');
+                            sw.Write(counter + 1); // Sequence number
+                            sw.Write(';');
+                            sw.Write(0); // Order ID
+                            sw.WriteLine();
+                            counter++;
+                        }
                     }
                     counter = 0;
                 }
@@ -132,8 +136,8 @@ namespace GroteOpdrachtV2 {
             double tv = 0, dv = 0, tp = 0, wp = 0;
             double[,] locTim = new double[2, 5];
             Dictionary<Cycle, int> cycWe = new Dictionary<Cycle, int>();
-            foreach (OrderPosition op in s.allPositions) {
-                if (op.active) {
+            foreach (OrderPosition op in Program.allPositions) {
+                if (op.Active) {
                     locTim[op.truck, op.day] += PathValue(op.order.Location, s.NextActive(op).Location);
                     locTim[op.truck, op.day] += op.order.Time;
                     if (!cycWe.ContainsKey(op.cycle)) cycWe.Add(op.cycle, 0);
@@ -143,12 +147,12 @@ namespace GroteOpdrachtV2 {
                     }
                 }
                 else {
-                    dv += op.order.Time * 3 * op.order.Frequency;
+                    dv += op.order.Time * 3;
                 }
             }
             foreach (Cycle c in s.allCycles) {
                 Order act;
-                if (c.first.active) act = c.first.order; 
+                if (c.first.Active) act = c.first.order; 
                 else {
                     act = s.NextActive(c.first);                    
                 }
@@ -165,11 +169,11 @@ namespace GroteOpdrachtV2 {
             }
             if (!TheSameISwear(tv, s.timeValue)) { Console.WriteLine("TimeValue should be " + tv + " but it is " + s.timeValue + "; difference: " + -(tv - s.timeValue)); different = true; }
             if (!TheSameISwear(dv, s.declineValue)) { Console.WriteLine("DeclineValue should be " + dv + " but it is " + s.declineValue + "; difference: " + -(dv - s.declineValue)); different = true; }
-            if (!TheSameISwear(tp, s.tp)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.tp + "; difference: " + -(tp - s.tp)); different = true; }
-            if (!TheSameISwear(wp, s.wp)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.wp + "; difference: " + -(wp - s.wp)); different = true; }
-            //if (different) {throw new Exception("One or more values were inequal; check console."); }
+            if (!TheSameISwear(tp, s.timePen)) { Console.WriteLine("TimePenalty should be " + tp + " but it is " + s.timePen + "; difference: " + -(tp - s.timePen)); different = true; }
+            if (!TheSameISwear(wp, s.weightPen)) { Console.WriteLine("WeightPenalty should be " + wp + " but it is " + s.weightPen + "; difference: " + -(wp - s.weightPen)); different = true; }
+            // WRONG DAY PENALTIES AND WRONG FREQUENCY PENALTIES NOT IN HERE YET
             if (different) {
-                Console.WriteLine("yee");
+                Console.WriteLine("One or more values were inequal; check console.");
             }
             return different;
         }
@@ -184,6 +188,36 @@ namespace GroteOpdrachtV2 {
             if (o.next == o) throw new Exception("AAaAAAaAA");
             if (o.previous != null) if (o.previous.next != o) throw new Exception("AAAAAAAAAA?");
             if (o.next != null) if (o.next.previous != o) throw new Exception("AAaaAAAaAA?");
+        }
+
+        public static int FreqPenAmount(int currentFreq, int desiredFreq) {
+            if (desiredFreq - currentFreq < 0) {
+                int yeet = 0;
+            }
+            return Math.Min(currentFreq, desiredFreq - currentFreq);
+        }
+
+        public static bool ValidDayPlanning(Order o, int[] planning) {
+            if (planning.Length == 0) return true;
+            byte freq = o.Frequency;
+            if (freq == 1) return true;
+            if (freq == 2) if (planning.Length == 1) return planning[0] != 3; else return Math.Abs(planning[0] - planning[1]) == 3;
+            if (freq == 3) {
+                bool[] test3 = new bool[3];
+                foreach (int b in planning) {
+                    int dv = b / 2;
+                    if (b % 3 != 1 || test3[dv]) return false;
+                    test3[dv] = true;
+                }
+                return true;
+            }
+            bool[] test4 = new bool[5];
+            foreach (int i in planning) {
+                if (test4[i - 1]) return false;
+                test4[i - 1] = true;
+            }
+            return true;
+
         }
     }
 }
