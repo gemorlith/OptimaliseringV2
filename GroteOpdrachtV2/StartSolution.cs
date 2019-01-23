@@ -355,7 +355,39 @@ namespace GroteOpdrachtV2 {
         }
     }
 
-    /*public class ReadGenerator : StartSolutionGenerator {
+
+    /*public static void Read() {
+        StreamReader sr = new StreamReader("../../BestSolution.txt");
+        string input;
+        string[] splitted;
+        sr.ReadLine();
+        while ((input = sr.ReadLine()) != null) {
+            splitted = input.Split(';');
+            int truck = int.Parse(splitted[0]);
+            int day = int.Parse(splitted[0]);
+            int counter = int.Parse(splitted[0]);
+            int order = int.Parse(splitted[0]);
+
+            allOrders.Add(order);
+            orderByID.Add(order.ID, order);
+            paths[location].Orders.Add(order);
+            paths[location].XCoord = xCoordinate;
+            paths[location].YCoord = yCoordinate;
+        }
+        orderByID.Add(0, new Order(0, "WHAT", 0, 0, 0, DisposalTime / 60, Home));
+        List<OrderPosition> opList = new List<OrderPosition>();
+        foreach (Order o in allOrders) {
+            for (int i = 0; i < o.Frequency; i++) {
+                OrderPosition op = new OrderPosition(o, 0, 0, null, false);
+                opList.Add(op);
+                o.Positions[i] = op;
+            }
+        }
+        allPositions = opList.ToArray();
+    }*/
+
+
+    public class ReadGenerator : StartSolutionGenerator {
         string path;
         public ReadGenerator(string path) {
             this.path = path;
@@ -365,62 +397,121 @@ namespace GroteOpdrachtV2 {
             string input;
             string[] inputs;
 
-            List<List<int>>[,] ol = new List<List<int>>[2, 5];
-            HashSet<int>[] pl = new HashSet<int>[5];
-            List<int> dc = new List<int>();
-            double declineVal = 0;
+            List<OrderPosition> plaatsbaar = new List<OrderPosition>();
             double timeVal = 0;
+            double declineVal = 0;
+            double penaltyVal = 0;
             double[,] localtimes = new double[2, 5];
-            List<int>[,] cw = new List<int>[2, 5];
-
-            for (int i = 0; i < 5; i++) {
-                pl[i] = new HashSet<int>();
+            List<Cycle>[,] cycles = new List<Cycle>[2, 5];
+            for (int d = 0; d < 5; d++) {
                 for (int t = 0; t < 2; t++) {
-                    cw[t, i] = new List<int>();
-                    ol[t, i] = new List<List<int>>();
-                    ol[t, i].Add(new List<int>());
-                    cw[t, i].Add(0);
+                    cycles[t, d] = new List<Cycle>();
                 }
             }
+            List<Cycle> allCycles = new List<Cycle>();
+            OrderPosition previous = null;
+            input = sr.ReadLine();
+            inputs = input.Split(';');
+            byte truck = (byte)(int.Parse(inputs[0]) - 1);
+            byte day = (byte)(int.Parse(inputs[1]) - 1);
+            int counter = int.Parse(inputs[2]);
+            int nr = int.Parse(inputs[3]);
+            Order order = Program.orderByID[nr];
+            order.Positions[0].previous = null;
+            localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location);
+            timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location);
+            Cycle c = new Cycle(day, truck, 0, order.Positions[0]);
+            order.Positions[0].cycle = c;
+            order.Positions[0].truck = truck;
+            order.Positions[0].day = day;
+            plaatsbaar.Add(order.Positions[0]);
 
-            foreach (Order o in Program.allOrders) {
-                dc.Add(o.ID);
-                declineVal += o.Time * 3 * o.Frequency;
-            }
-            short from = Program.Home;
             while ((input = sr.ReadLine()) != null) {
                 inputs = input.Split(';');
-                int truck = int.Parse(inputs[0]) - 1;
-                int day = int.Parse(inputs[1]) - 1;
-                int nr = int.Parse(inputs[2]);
-                int val = int.Parse(inputs[3]);
-                Order o = Program.orderByID[val];
-
-                pl[day].Add(val);
-                dc.Remove(val);
-                int cycle = ol[truck, day].Count - 1;
-                if (val != 0) {
-                    ol[truck, day][cycle].Add(val);
-                    declineVal -= o.Time * 3;
+                truck = (byte) (int.Parse(inputs[0]) - 1);
+                day = (byte)(int.Parse(inputs[1]) - 1);
+                counter = int.Parse(inputs[2]);
+                nr = int.Parse(inputs[3]);
+                order = Program.orderByID[nr];
+                
+                if (nr == 0) {
+                    previous.next = null;
+                    cycles[truck, day].Add(c);
+                    allCycles.Add(c);
+                    localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location) + Program.DisposalTime;
+                    timeVal += Util.PathValue(previous.order.Location, order.Location) + Program.DisposalTime;
+                    previous = null;
                 }
                 else {
-                    ol[truck, day].Add(new List<int>());
-                    cw[truck, day].Add(0);
+                    OrderPosition[] positions = order.Positions;
+                    for (int i = 0; i < positions.Length; i++) {
+                        if (positions[i].cycle == null) {
+                            if (previous == null) {
+                                c = new Cycle(day, truck, 0, positions[i]);
+                                localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location);
+                                timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location);
+                            }
+                            else {
+                                previous.next = positions[i];
+                                localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location);
+                                timeVal += Util.PathValue(previous.order.Location, order.Location);
+
+                            }
+                            positions[i].Active = true;
+                            positions[i].previous = previous;
+                            positions[i].cycle = c;
+                            positions[i].day = day;
+                            positions[i].truck = truck;
+                            c.cycleWeight += order.ContainerVolume;
+                            previous = positions[i];
+                            plaatsbaar.Add(positions[i]);
+                            break;
+                        }
+                    }
                 }
-                cw[truck, day][cycle] += o.ContainerVolume;
-                localtimes[truck, day] += o.Time;
-                localtimes[truck, day] += Program.PathValue(from, o.Location);
-                timeVal += o.Time;
-                timeVal += Program.PathValue(from, o.Location);
-                from = o.Location;
             }
-            foreach (List<List<int>> lli in ol) {
-                if (lli != null) {
-                    lli.RemoveAt(lli.Count - 1);
+            
+            foreach (OrderPosition op in Program.allPositions) {
+                if (!op.Active) {
+                    declineVal += op.order.ContainerVolume * 3;
+                    int index = (int)(Util.Rnd * (plaatsbaar.Count + allCycles.Count));
+                    if (index < plaatsbaar.Count) {
+                        op.previous = plaatsbaar[index];
+                        op.next = plaatsbaar[index].next;
+                        op.previous.next = op;
+                        op.cycle = plaatsbaar[index].cycle;
+                        op.day = plaatsbaar[index].day;
+                        op.truck = plaatsbaar[index].truck;
+                        if (op.next != null) {
+                            op.next.previous = op; 
+                        }
+                    } else {
+                        op.next = allCycles[index - plaatsbaar.Count].first;
+                        op.cycle = allCycles[index - plaatsbaar.Count].first.cycle;
+                        op.day = allCycles[index - plaatsbaar.Count].first.day;
+                        op.truck = allCycles[index - plaatsbaar.Count].first.truck;
+                        allCycles[index - plaatsbaar.Count].first = op;
+                        op.next.previous = op;
+
+                    }
                 }
             }
+
+            for (int i = 0; i < allCycles.Count; i++) {
+                if (allCycles[i].cycleWeight > Program.MaxCarry) {
+                    penaltyVal += (allCycles[i].cycleWeight - Program.MaxCarry) * Program.overWeightPenalty;
+                }
+            }
+            for (int d = 0; d < 5; d++) {
+                for (int t = 0; t < 2; t++){
+                    if (localtimes[t, d] > Program.MaxTime) {
+                        penaltyVal += (localtimes[t, d] - Program.MaxTime) * Program.overTimePenalty;
+                    }
+                }
+            }
+           
             sr.Close();
-            return new Solution(ol, pl, dc, timeVal, declineVal, localtimes, cw, 0);
+            return new Solution(timeVal, declineVal, penaltyVal, localtimes, cycles);
         }
-    }*/
+    }
 }
