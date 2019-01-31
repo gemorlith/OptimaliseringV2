@@ -190,6 +190,13 @@ namespace GroteOpdrachtV2 {
             if (o.next != null) if (o.next.previous != o) throw new Exception("AAaaAAAaAA?");
         }
 
+        public static int IncreaseFreqPenAmount(Order o) {
+            int last = o.LastFreqPenAmount;
+            int newFPA = FreqPenAmount(o.ActiveFreq, o.Frequency);
+            o.LastFreqPenAmount = newFPA;
+            return newFPA - last;
+        }
+
         public static int FreqPenAmount(int currentFreq, int desiredFreq) {
             if (desiredFreq - currentFreq < 0) {
                 int yeet = 0;
@@ -197,27 +204,43 @@ namespace GroteOpdrachtV2 {
             return Math.Min(currentFreq, desiredFreq - currentFreq);
         }
 
-        public static bool ValidDayPlanning(Order o, int[] planning) {
-            if (planning.Length == 0) return true;
+        public static int IncreaseInvalidDayPlanning(Order o) {
+            int last = o.LastValidPlan;
+            int[] plannedDays = new int[o.ActiveFreq];
+            int d = 0;
+            foreach (OrderPosition pos in o.Positions) {
+                if (pos.Active) {
+                    plannedDays[d] = pos.day + 1;
+                    d++;
+                }
+            }
+            int newVDP;
+            if (InvalidDayPlanning(o, plannedDays)) newVDP = 1;
+            else newVDP = 0;
+            o.LastValidPlan = newVDP;
+            return newVDP - last;
+        }
+
+        public static bool InvalidDayPlanning(Order o, int[] planning) {
+            if (planning.Length == 0) return false;
             byte freq = o.Frequency;
-            if (freq == 1) return true;
-            if (freq == 2) if (planning.Length == 1) return planning[0] != 3; else return Math.Abs(planning[0] - planning[1]) == 3;
+            if (freq == 1) return false;
+            if (freq == 2) if (planning.Length == 1) return planning[0] == 3; else return Math.Abs(planning[0] - planning[1]) != 3;
             if (freq == 3) {
                 bool[] test3 = new bool[3];
                 foreach (int b in planning) {
                     int dv = b / 2;
-                    if (b % 3 != 1 || test3[dv]) return false;
-                    test3[dv] = true;
+                    if (b % 3 != 1 || test3[dv]) return true;
+                    test3[dv] = false;
                 }
-                return true;
+                return false;
             }
             bool[] test4 = new bool[5];
             foreach (int i in planning) {
-                if (test4[i - 1]) return false;
-                test4[i - 1] = true;
+                if (test4[i - 1]) return true;
+                test4[i - 1] = false;
             }
-            return true;
-
+            return false;
         }
     }
 }

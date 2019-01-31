@@ -386,7 +386,8 @@ namespace GroteOpdrachtV2 {
         allPositions = opList.ToArray();
     }*/
 
-
+    // HIER MOETEN VOOR ALLE ORDERS DE LASTFREQPENAMOUNT EN LASTVALIDPLAN PROPERTIES NOG INGESTELD WORDEN
+    // EDIT: WAARSCHIJNLIJK ACTIVEFREQ OOK?
     public class ReadGenerator : StartSolutionGenerator {
         string path;
         public ReadGenerator(string path) {

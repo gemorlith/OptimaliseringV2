@@ -128,20 +128,12 @@ namespace GroteOpdrachtV2 {
             return c;
         }
         public void UpdatePenalties(OrderPosition op, float time, int weight) {
-            int truck = op.truck, day = op.day, kouters = 0;
+            int truck = op.truck, day = op.day;
             Order o = op.order;
-            int[] flipje = new int[o.ActiveFreq];
-            foreach (OrderPosition pos in o.Positions) {
-                if (pos.Active) {
-                    flipje[kouters] = pos.day + 1;
-                    kouters++;
-                }
-            }
             timePen += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
             weightPen += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
-            freqPen = Program.wrongFreqPenalty * Util.FreqPenAmount(o.ActiveFreq, o.Frequency);
-            if (Util.ValidDayPlanning(o, flipje)) wrongDayPen = Program.wrongDayPentaly;
-            else wrongDayPen = 0;
+            freqPen += Program.wrongFreqPenalty * Util.IncreaseFreqPenAmount(o);
+            wrongDayPen += Program.wrongDayPentaly * Util.IncreaseInvalidDayPlanning(o);
             penaltyValue = timePen + weightPen + freqPen + wrongDayPen;
         }
     }
@@ -159,6 +151,13 @@ namespace GroteOpdrachtV2 {
     }
 
     public class OrderPosition {
+        public OrderPosition(Order o, byte day, byte truck, Cycle cycle, bool active) {
+            order = o;
+            this.day = day;
+            this.truck = truck;
+            this.cycle = cycle;
+            this.Active = active;
+        }
         private bool active;
         public Order order;
         public OrderPosition next;
@@ -172,13 +171,6 @@ namespace GroteOpdrachtV2 {
                 if (!active && value) order.ActiveFreq++;
                 active = value;
             }
-        }
-        public OrderPosition(Order o, byte day, byte truck, Cycle cycle, bool active) {
-            order = o;
-            this.day = day;
-            this.truck = truck;
-            this.cycle = cycle;
-            this.Active = active;
         }
     }
 
@@ -199,8 +191,8 @@ namespace GroteOpdrachtV2 {
         public short ContainerVolume { get; set; }
         public float Time { get; set; }
         public short Location { get; set; }
-        public double FreqPen { get; set; }
-        public double WrongDayPen { get; set; }
+        public int LastFreqPenAmount { get; set; }
+        public int LastValidPlan { get; set; }
         public OrderPosition[] Positions { get; set; }
     }
 }

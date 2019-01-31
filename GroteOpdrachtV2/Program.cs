@@ -7,13 +7,13 @@ namespace GroteOpdrachtV2 {
     class Program {
 
         #region Debug
-        public const int pasteFreq = 100000;
+        public const int printFreq = 100000;
         public const int saveFreq = 50; //saves solution in temp file every [pasteFreq * saveFreq] neighbours
         #endregion Debug
 
         #region Parameters
         public static float annealingStartT = 200f;//150
-        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution(5737).txt");
+        public static StartSolutionGenerator Generator = new EmptyGenerator();//ReadGenerator(".../.../Solutions/BestSolution(5737).txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
         public const int maxIterations = 500000000;//10000000?
         public const double annealingQPerNSSize = 8;//8
@@ -32,6 +32,7 @@ namespace GroteOpdrachtV2 {
         public const short DisposalTime = 30 * 60;
         public const short Home = 287;
         public static Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
+        public static int MaxPrint = maxIterations / printFreq;
         #endregion Constants
 
         #region Variables

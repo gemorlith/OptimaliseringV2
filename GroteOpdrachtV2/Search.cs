@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Input;
 
 namespace GroteOpdrachtV2 {
     public abstract class SearchType {
@@ -39,11 +40,12 @@ namespace GroteOpdrachtV2 {
             Compare(s);
             while (counter < Program.maxIterations) {
                 //Util.Test(s, "Voor TryNeighbour", false);
+                //if (Keyboard.IsKeyDown(Key.Escape)) // Maybe add a safe quit functionality?
                 TryNeighbour(s);
                 Compare(s);
                 counter++;
-                if (counter % Program.pasteFreq == 0) {
-                    if (counter % (Program.pasteFreq * Program.saveFreq) == 0) {
+                if (counter % Program.printFreq == 0) {
+                    if (counter % (Program.printFreq * Program.saveFreq) == 0) {
                         Util.SaveSolution(s, "../../Solutions/Temp.txt");
                         Console.WriteLine("Opgeslagen in Temp.txt");
                     }
@@ -54,7 +56,7 @@ namespace GroteOpdrachtV2 {
             counter = 0;
         }
         protected virtual string StatusString(Solution s) {
-            return (counter / Program.pasteFreq) + "/" + Program.maxIterations / Program.pasteFreq + " cr:" + (int)s.Value;
+            return (counter / Program.printFreq) + "/" + Program.MaxPrint + " cr:" + (int)s.Value;
         }
         protected virtual void Reset() { }
         public abstract void TryNeighbour(Solution s);
