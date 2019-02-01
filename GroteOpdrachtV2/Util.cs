@@ -17,7 +17,7 @@ namespace GroteOpdrachtV2 {
                         bool active = false;
                         while (current != null) {
                             if (!current.Active) {
-                                current = current.next;
+                                current = current.Next;
                                 continue;
                             }
                             active = true;
@@ -30,7 +30,7 @@ namespace GroteOpdrachtV2 {
                             sw.Write(current.order.ID); // Order ID
                             sw.WriteLine();
                             counter++;
-                            current = current.next;
+                            current = current.Next;
                         }
                         if (active) {
                             sw.Write(t); // Vehicle
@@ -138,8 +138,8 @@ namespace GroteOpdrachtV2 {
             Dictionary<Cycle, int> cycWe = new Dictionary<Cycle, int>();
             foreach (OrderPosition op in Program.allPositions) {
                 if (op.Active) {
-                    locTim[op.truck, op.day] += PathValue(op.order.Location, s.NextActive(op).Location);
-                    locTim[op.truck, op.day] += op.order.Time;
+                    locTim[op.truck, op.Day] += PathValue(op.order.Location, s.NextActive(op).Location);
+                    locTim[op.truck, op.Day] += op.order.Time;
                     if (!cycWe.ContainsKey(op.cycle)) cycWe.Add(op.cycle, 0);
                     cycWe[op.cycle] += op.order.ContainerVolume;
                     if (!s.allCycles.Contains(op.cycle)) {
@@ -184,10 +184,10 @@ namespace GroteOpdrachtV2 {
 
         public static void CheckPrevAndNextForLoops(OrderPosition o) {
             if (o == null) return;
-            if (o.previous == o) throw new Exception("AAAAAAAAA");
-            if (o.next == o) throw new Exception("AAaAAAaAA");
-            if (o.previous != null) if (o.previous.next != o) throw new Exception("AAAAAAAAAA?");
-            if (o.next != null) if (o.next.previous != o) throw new Exception("AAaaAAAaAA?");
+            if (o.Previous == o) throw new Exception("AAAAAAAAA");
+            if (o.Next == o) throw new Exception("AAaAAAaAA");
+            if (o.Previous != null) if (o.Previous.Next != o) throw new Exception("AAAAAAAAAA?");
+            if (o.Next != null) if (o.Next.Previous != o) throw new Exception("AAaaAAAaAA?");
         }
 
         public static int IncreaseFreqPenAmount(Order o) {
@@ -210,7 +210,7 @@ namespace GroteOpdrachtV2 {
             int d = 0;
             foreach (OrderPosition pos in o.Positions) {
                 if (pos.Active) {
-                    plannedDays[d] = pos.day + 1;
+                    plannedDays[d] = pos.Day + 1;
                     d++;
                 }
             }
@@ -231,16 +231,33 @@ namespace GroteOpdrachtV2 {
                 foreach (int b in planning) {
                     int dv = b / 2;
                     if (b % 3 != 1 || test3[dv]) return true;
-                    test3[dv] = false;
+                    test3[dv] = true;
                 }
                 return false;
             }
             bool[] test4 = new bool[5];
             foreach (int i in planning) {
                 if (test4[i - 1]) return true;
-                test4[i - 1] = false;
+                test4[i - 1] = true;
             }
             return false;
+        }
+
+        public static int ShadowPath (OrderPosition op) {
+            Order nxt = Program.HomeOrder;
+            Order prv = Program.HomeOrder;
+            if (op.Previous != null) prv = op.Previous.order;
+            if (op.Next != null) nxt = op.Next.order;
+            return PathValue(prv.Location,op.order.Location) + PathValue(op.order.Location, nxt.Location);
+        }
+
+        public static int ShadowDay (OrderPosition op) {
+            int[] day = new int[1];
+            day[0] = op.Day + 1;
+            if (InvalidDayPlanning(op.order, day)) {
+                return (int) Program.wrongDayPentalty;
+            }
+            return 0;
         }
     }
 }

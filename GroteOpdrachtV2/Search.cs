@@ -46,6 +46,7 @@ namespace GroteOpdrachtV2 {
                 counter++;
                 if (counter % Program.printFreq == 0) {
                     if (counter % (Program.printFreq * Program.saveFreq) == 0) {
+                        Util.Test(s, "occasionalTest", true);
                         Util.SaveSolution(s, "../../Solutions/Temp.txt");
                         Console.WriteLine("Opgeslagen in Temp.txt");
                     }
@@ -78,9 +79,11 @@ namespace GroteOpdrachtV2 {
             double otv = s.timeValue;
             n.Apply();
             double gain = s.Value - oldValue;
-            if (gain > 0f && !ApplyNegativeAnyways(gain)) {
-                double newValue = s.Value;
-                n.Reverse().Apply();
+            if (gain >= 0f && !ApplyNegativeAnyways(gain)) {
+                if (gain != 0f || n.shadowGain() > 0) {
+                    double newValue = s.Value;
+                    n.Reverse().Apply();
+                }
                 //if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
             }
         }

@@ -4,6 +4,7 @@ namespace GroteOpdrachtV2 {
     public abstract class Neighbour {
         protected Solution s;
         public abstract void Apply();
+        public abstract int shadowGain();
         public abstract Neighbour Reverse();
     }
     public class ActivateNeighbour : Neighbour {
@@ -18,6 +19,9 @@ namespace GroteOpdrachtV2 {
         public override Neighbour Reverse() {
             return new DisableNeighbour(s, op);
         }
+        public override int shadowGain() {
+            return 0;
+        }
     }
     public class DisableNeighbour : Neighbour {
         OrderPosition op;
@@ -31,6 +35,9 @@ namespace GroteOpdrachtV2 {
         public override Neighbour Reverse() {
             return new ActivateNeighbour(s, op);
         }
+        public override int shadowGain() {
+            return 0;
+        }
     }
     public class MoveNeighbour : Neighbour {
         OrderPosition op;
@@ -38,6 +45,7 @@ namespace GroteOpdrachtV2 {
         OrderPosition oldPrevious;
         Cycle cycle, oldCycle;
         byte day, truck, oldDay, oldTruck;
+        int initialShadow;
         public MoveNeighbour(Solution s, OrderPosition op, OrderPosition newPrevious, byte day, byte truck, Cycle cycle) {
             this.s = s;
             this.op = op;
@@ -45,10 +53,11 @@ namespace GroteOpdrachtV2 {
             this.day = day;
             this.truck = truck;
             this.cycle = cycle;
-            oldPrevious = op.previous;
-            oldDay = op.day;
+            oldPrevious = op.Previous;
+            oldDay = op.Day;
             oldTruck = op.truck;
             oldCycle = op.cycle;
+            initialShadow = op.Shadow;
         }
         public override void Apply() {
             bool active = op.Active;
@@ -60,26 +69,34 @@ namespace GroteOpdrachtV2 {
         public override Neighbour Reverse() {
             return new MoveNeighbour(s, op, oldPrevious, oldDay, oldTruck, oldCycle);
         }
+        public override int shadowGain() {
+            return op.Shadow - initialShadow;
+        }
     }
     public class SwapNeighbour : Neighbour {
         OrderPosition op1;
         OrderPosition op2;
+        int shadow;
         public SwapNeighbour(Solution s, OrderPosition op1, OrderPosition op2) {
             this.s = s;
             this.op1 = op1;
             this.op2 = op2;
         }
         public override void Apply() {
-            OrderPosition prev1 = op1.previous;
+            OrderPosition prev1 = op1.Previous;
             Cycle cycle1 = op1.cycle;
-            byte day1 = op1.day, truck1 = op1.truck;
-            MoveNeighbour move1 = new MoveNeighbour(s, op1, op2.previous, op2.day, op2.truck, op2.cycle);
+            byte day1 = op1.Day, truck1 = op1.truck;
+            MoveNeighbour move1 = new MoveNeighbour(s, op1, op2.Previous, op2.Day, op2.truck, op2.cycle);
             move1.Apply();
             MoveNeighbour move2 = new MoveNeighbour(s, op2, prev1, day1, truck1, cycle1);
             move2.Apply();
+            shadow = move1.shadowGain() + move2.shadowGain();
         }
         public override Neighbour Reverse() {
             return new SwapNeighbour(s, op2, op1);
+        }
+        public override int shadowGain() {
+            return shadow;
         }
     }
 }

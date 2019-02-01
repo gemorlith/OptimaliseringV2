@@ -38,7 +38,7 @@
             if (rnd < Program.allPositions.Length) { // Move to after an existing order
                 prev = Program.allPositions[rnd];
                 cycle = prev.cycle;
-                truck = prev.truck; day = prev.day;
+                truck = prev.truck; day = prev.Day;
             }
             else if (rnd < Program.allPositions.Length + solution.allCycles.Count) { // Move to beginning of existing cycle
                 prev = null;

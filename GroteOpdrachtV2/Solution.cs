@@ -21,21 +21,21 @@ namespace GroteOpdrachtV2 {
             }
         }
         public Order NextActive(OrderPosition o) {
-            OrderPosition next = o.next;
+            OrderPosition next = o.Next;
             if (next == null) return Program.HomeOrder;
-            if (next == next.next) throw new Exception("next.next is equal to next, that's a problem.");
+            if (next == next.Next) throw new Exception("next.next is equal to next, that's a problem.");
             while (!next.Active) {
-                next = next.next;
+                next = next.Next;
                 if (next == null) return Program.HomeOrder;
             }
             return next.order;
         }
         public Order PrevActive(OrderPosition o) {
-            OrderPosition prev = o.previous;
+            OrderPosition prev = o.Previous;
             if (prev == null) return Program.HomeOrder;
-            if (prev == prev.previous) throw new Exception("previous.previous is equal to previous, that's a problem.");
+            if (prev == prev.Previous) throw new Exception("previous.previous is equal to previous, that's a problem.");
             while (!prev.Active) {
-                prev = prev.previous;
+                prev = prev.Previous;
                 if (prev == null) return Program.HomeOrder;
             }
             return prev.order;
@@ -49,7 +49,7 @@ namespace GroteOpdrachtV2 {
             int withTime = Util.PathValue(prev.Location, op.order.Location) + Util.PathValue(op.order.Location, next.Location);
             float time;
             int truck = op.truck;
-            int day = op.day;
+            int day = op.Day;
             int weight;
             float decline;
             if (setting) {
@@ -77,11 +77,11 @@ namespace GroteOpdrachtV2 {
         }
         public void RemoveOrder(OrderPosition order) {
             if (order.Active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
-            if (order.next != null) order.next.previous = order.previous;
-            if (order.previous != null) order.previous.next = order.next;
-            else order.cycle.first = order.next;
+            if (order.Next != null) order.Next.Previous = order.Previous;
+            if (order.Previous != null) order.Previous.Next = order.Next;
+            else order.cycle.first = order.Next;
 
-            if (order.next == null && order.previous == null) RemoveCycle(order.cycle);
+            if (order.Next == null && order.Previous == null) RemoveCycle(order.cycle);
             //Util.CheckPrevAndNextForLoops(order.next);
             //Util.CheckPrevAndNextForLoops(order.previous);
         }
@@ -89,28 +89,28 @@ namespace GroteOpdrachtV2 {
             if (previous == order) throw new Exception("Je probeert het order na zichzelf te plaatsen, doe maar niet!");
             if (order.Active) throw new Exception("Nou doe maar eerst inactive alsjeblieft.");
             if (cycle != null && cycle.first == null) cycle = AddCycle(day, truck);
-            order.previous = previous;
+            order.Previous = previous;
             if (previous != null) {
                 if (truck != previous.truck ||
-                    day != previous.day ||
+                    day != previous.Day ||
                     cycle != previous.cycle) throw new Exception("Truck, day or cycle doesn't match.");
-                order.next = previous.next;
-                previous.next = order;
+                order.Next = previous.Next;
+                previous.Next = order;
             }
             else {
                 if (cycle != null) {
-                    order.next = cycle.first;
+                    order.Next = cycle.first;
                     cycle.first = order;
                 }
                 else { // Create new cycle
                     cycle = AddCycle(day, truck);
                     cycle.first = order;
-                    order.next = null;
+                    order.Next = null;
                 }
             }
-            if (order.next != null) order.next.previous = order;
+            if (order.Next != null) order.Next.Previous = order;
 
-            order.day = day;
+            order.Day = day;
             order.truck = truck;
             order.cycle = cycle;
             //Util.CheckPrevAndNextForLoops(order);
@@ -128,12 +128,12 @@ namespace GroteOpdrachtV2 {
             return c;
         }
         public void UpdatePenalties(OrderPosition op, float time, int weight) {
-            int truck = op.truck, day = op.day;
+            int truck = op.truck, day = op.Day;
             Order o = op.order;
             timePen += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
             weightPen += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
             freqPen += Program.wrongFreqPenalty * Util.IncreaseFreqPenAmount(o);
-            wrongDayPen += Program.wrongDayPentaly * Util.IncreaseInvalidDayPlanning(o);
+            wrongDayPen += Program.wrongDayPentalty * Util.IncreaseInvalidDayPlanning(o);
             penaltyValue = timePen + weightPen + freqPen + wrongDayPen;
         }
     }
@@ -153,17 +153,36 @@ namespace GroteOpdrachtV2 {
     public class OrderPosition {
         public OrderPosition(Order o, byte day, byte truck, Cycle cycle, bool active) {
             order = o;
-            this.day = day;
+            this.Day = day;
             this.truck = truck;
             this.cycle = cycle;
             this.Active = active;
         }
         private bool active;
         public Order order;
-        public OrderPosition next;
-        public OrderPosition previous;
+        private OrderPosition nxt;
+        private OrderPosition prv;
+        public OrderPosition Next {
+            get { return nxt; }
+            set {
+                nxt = value;
+                pathShadow = Util.ShadowPath(this);
+            }
+        }
+        public OrderPosition Previous {
+            get { return prv; }
+            set {
+                prv = value;
+                pathShadow = Util.ShadowPath(this);
+            }
+        }
         public Cycle cycle;
-        public byte day, truck;
+        public int pathShadow;
+        public int dayShadow;
+        public int Shadow { get { return pathShadow + dayShadow; } }
+        private byte day;
+        public byte Day { get { return day; } set { day = value; dayShadow = Util.ShadowDay(this); } }
+        public byte truck;
         public bool Active {
             get { return active; }
             set {

@@ -342,13 +342,13 @@ namespace GroteOpdrachtV2 {
             }
             foreach (OrderPosition op in Program.allPositions) {
                 op.cycle = c;
-                op.previous = prev;
+                op.Previous = prev;
                 if (prev != null) {
-                    prev.next = op;
+                    prev.Next = op;
                 }
                 prev = op;
             }
-            prev.next = null;
+            prev.Next = null;
             c.first = Program.allPositions[0];
             cycles[0, 0].Add(c);
             return new Solution(0, declineVal, 0, localtimes, cycles);
@@ -418,13 +418,13 @@ namespace GroteOpdrachtV2 {
             int counter = int.Parse(inputs[2]);
             int nr = int.Parse(inputs[3]);
             Order order = Program.orderByID[nr];
-            order.Positions[0].previous = null;
+            order.Positions[0].Previous = null;
             localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location);
             timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location);
             Cycle c = new Cycle(day, truck, 0, order.Positions[0]);
             order.Positions[0].cycle = c;
             order.Positions[0].truck = truck;
-            order.Positions[0].day = day;
+            order.Positions[0].Day = day;
             plaatsbaar.Add(order.Positions[0]);
 
             while ((input = sr.ReadLine()) != null) {
@@ -436,7 +436,7 @@ namespace GroteOpdrachtV2 {
                 order = Program.orderByID[nr];
                 
                 if (nr == 0) {
-                    previous.next = null;
+                    previous.Next = null;
                     cycles[truck, day].Add(c);
                     allCycles.Add(c);
                     localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location) + Program.DisposalTime;
@@ -453,15 +453,15 @@ namespace GroteOpdrachtV2 {
                                 timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location);
                             }
                             else {
-                                previous.next = positions[i];
+                                previous.Next = positions[i];
                                 localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location);
                                 timeVal += Util.PathValue(previous.order.Location, order.Location);
 
                             }
                             positions[i].Active = true;
-                            positions[i].previous = previous;
+                            positions[i].Previous = previous;
                             positions[i].cycle = c;
-                            positions[i].day = day;
+                            positions[i].Day = day;
                             positions[i].truck = truck;
                             c.cycleWeight += order.ContainerVolume;
                             previous = positions[i];
@@ -477,22 +477,22 @@ namespace GroteOpdrachtV2 {
                     declineVal += op.order.ContainerVolume * 3;
                     int index = (int)(Util.Rnd * (plaatsbaar.Count + allCycles.Count));
                     if (index < plaatsbaar.Count) {
-                        op.previous = plaatsbaar[index];
-                        op.next = plaatsbaar[index].next;
-                        op.previous.next = op;
+                        op.Previous = plaatsbaar[index];
+                        op.Next = plaatsbaar[index].Next;
+                        op.Previous.Next = op;
                         op.cycle = plaatsbaar[index].cycle;
-                        op.day = plaatsbaar[index].day;
+                        op.Day = plaatsbaar[index].Day;
                         op.truck = plaatsbaar[index].truck;
-                        if (op.next != null) {
-                            op.next.previous = op; 
+                        if (op.Next != null) {
+                            op.Next.Previous = op; 
                         }
                     } else {
-                        op.next = allCycles[index - plaatsbaar.Count].first;
+                        op.Next = allCycles[index - plaatsbaar.Count].first;
                         op.cycle = allCycles[index - plaatsbaar.Count].first.cycle;
-                        op.day = allCycles[index - plaatsbaar.Count].first.day;
+                        op.Day = allCycles[index - plaatsbaar.Count].first.Day;
                         op.truck = allCycles[index - plaatsbaar.Count].first.truck;
                         allCycles[index - plaatsbaar.Count].first = op;
-                        op.next.previous = op;
+                        op.Next.Previous = op;
 
                     }
                 }
