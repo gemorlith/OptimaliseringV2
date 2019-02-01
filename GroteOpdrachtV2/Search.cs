@@ -70,7 +70,7 @@ namespace GroteOpdrachtV2 {
         public override void TryNeighbour(Solution s) {
             NeighbourSpace ns = Util.NeighbourTypeFromRNG();
             if (ns.IsEmpty(s)) return;
-            UpdateQ();
+            UpdateQ(s);
             Neighbour n = ns.RndNeighbour(s);
             if (n == null) return;
             double oldValue = s.Value;
@@ -90,15 +90,27 @@ namespace GroteOpdrachtV2 {
         protected override void Reset() {
             QLeft = 1;
             T = Program.annealingStartT;
+            Program.overTimePenalty = Program.overTimePenaltyBase;
+            Program.overWeightPenalty = Program.overWeightPenaltyBase;
+            Program.wrongFreqPenalty = Program.wrongFreqPenaltyBase;
+            Program.wrongDayPentalty = Program.wrongDayPentaltyBase;
         }
         protected override string StatusString(Solution s) {
             return base.StatusString(s) + " T: " + T;
         }
-        private void UpdateQ() {
+        private void UpdateQ(Solution s) {
             QLeft -= 1 / (double)(Program.complexityEstimate * Program.annealingQPerNSSize);
             if (QLeft < 0) {
                 QLeft = 1;
                 T *= Program.alpha;
+                Program.overWeightPenalty *= Program.weightPenInc;
+                Program.overTimePenalty *= Program.timePenInc;
+                Program.wrongFreqPenalty *= Program.freqPenInc;
+                Program.wrongDayPentalty *= Program.dayPenInc;
+                s.freqPen *= Program.freqPenInc;
+                s.timePen *= Program.timePenInc;
+                s.weightPen *= Program.weightPenInc;
+                s.wrongDayPen *= Program.dayPenInc;
             }
         }
         private bool ApplyNegativeAnyways(double gain) {

@@ -12,18 +12,22 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = 10f;//150
+        public static float annealingStartT = .1f;//150
         public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const int maxIterations = 250000000;//10000000?
+        public const int maxIterations = 130000000;//10000000?
         public const double annealingQPerNSSize = 8;//8
         public const float alpha = 0.995f;//0.99
-        public const double overTimePenalty = 8;//?
-        public const double overWeightPenalty = 100;//>15
-        public const double wrongFreqPenalty = 10000;//10000
-        public const double wrongDayPentalty = 10000;//10000
+        public const double overTimePenaltyBase = 8;//?       
+        public const double overWeightPenaltyBase = 100;//>15
+        public const double wrongFreqPenaltyBase = 400;//10000
+        public const double wrongDayPentaltyBase = 400;//10000
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
+        public const double timePenInc = 1;//crashes if <> 1
+        public const double weightPenInc = 1;
+        public const double dayPenInc = 1;
+        public const double freqPenInc = 1;
         #endregion Parameters
 
         #region Constants
@@ -43,6 +47,10 @@ namespace GroteOpdrachtV2 {
         public static OrderPosition[] allPositions;
         public static Dictionary<int, Order> orderByID = new Dictionary<int, Order>();
         public static Random random = new Random();
+        public static double overTimePenalty = overTimePenaltyBase;
+        public static double overWeightPenalty = overWeightPenaltyBase;
+        public static double wrongFreqPenalty = wrongDayPentaltyBase;
+        public static double wrongDayPentalty = wrongDayPentaltyBase;
         #endregion Variables
 
         static void Main(string[] args) {
@@ -56,9 +64,9 @@ namespace GroteOpdrachtV2 {
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();
                 Console.WriteLine(i);
-                annealingStartT *= 0.9f;
-                if (annealingStartT < 5f) {
-                    annealingStartT += 25f;
+                annealingStartT *= 0.8f;
+                if (annealingStartT < 0.05f) {
+                    annealingStartT += 1f;
                 }
                 ResetOps();
             }
