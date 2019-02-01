@@ -65,7 +65,7 @@ namespace GroteOpdrachtV2 {
 
     public class SimulatedAnnealingMK1 : Localsearch {
         protected double QLeft = 1;
-        protected double T = Program.annealingStartT;
+        protected float T = Program.annealingStartT;
 
         public override void TryNeighbour(Solution s) {
             NeighbourSpace ns = Util.NeighbourTypeFromRNG();

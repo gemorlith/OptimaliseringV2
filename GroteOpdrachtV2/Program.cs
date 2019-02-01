@@ -12,12 +12,12 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static double annealingStartT = 100f;//150
-        public static StartSolutionGenerator Generator = new EmptyGenerator();//ReadGenerator(".../.../Solutions/BestSolution(5737).txt");
+        public static float annealingStartT = 0f;//150
+        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution(5737).txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
         public const int maxIterations = 500000000;//10000000?
         public const double annealingQPerNSSize = 8;//8
-        public const double alpha = 0.995f;//0.99
+        public const float alpha = 0.995f;//0.99
         public const double overTimePenalty = 8;//?
         public const double overWeightPenalty = 100;//>15
         public const double wrongFreqPenalty = 10000;//10000
@@ -100,7 +100,7 @@ namespace GroteOpdrachtV2 {
                 byte pwk = (byte)(splitted[2][0] - '0');
                 byte containers = byte.Parse(splitted[3]);
                 short containervolume = short.Parse(splitted[4]);
-                double time = double.Parse(splitted[5]);
+                float time = float.Parse(splitted[5]);
                 short location = short.Parse(splitted[6]);
                 long xCoordinate = long.Parse(splitted[7]);
                 long yCoordinate = long.Parse(splitted[8]);

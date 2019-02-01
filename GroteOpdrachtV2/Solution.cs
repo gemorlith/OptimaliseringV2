@@ -47,11 +47,11 @@ namespace GroteOpdrachtV2 {
             Order next = NextActive(op);
             int withoutTime = Util.PathValue(prev.Location, next.Location);
             int withTime = Util.PathValue(prev.Location, op.order.Location) + Util.PathValue(op.order.Location, next.Location);
-            double time;
+            float time;
             int truck = op.truck;
             int day = op.Day;
             int weight;
-            double decline;
+            float decline;
             if (setting) {
                 time = op.order.Time + withTime - withoutTime;
                 weight = op.order.ContainerVolume;
@@ -144,13 +144,13 @@ namespace GroteOpdrachtV2 {
         }
         // Om één of andere reden zorgt het aanroepen van de UpdatePenalties-functie voor problemen in Release-modus.
         // Daarom hebben we de inhoud van de functie direct in de SetActive-functie gezet.
-        public void UpdatePenalties(OrderPosition op, double time, int weight) {
+        public void UpdatePenalties(OrderPosition op, float time, int weight) {
             int truck = op.truck, day = op.Day;
             Order o = op.order;
             timePen += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
             weightPen += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
-            freqPen += Program.wrongFreqPenalty * (double)Util.IncreaseFreqPenAmount(o);
-            wrongDayPen += Program.wrongDayPentalty * (double)Util.IncreaseInvalidDayPlanning(o);
+            freqPen += Program.wrongFreqPenalty * Util.IncreaseFreqPenAmount(o);
+            wrongDayPen += Program.wrongDayPentalty * Util.IncreaseInvalidDayPlanning(o);
             penaltyValue = timePen + weightPen + freqPen + wrongDayPen;
         }
     }
@@ -211,7 +211,7 @@ namespace GroteOpdrachtV2 {
     }
 
     public class Order {
-        public Order(int id, string place, byte frequency, byte containers, short containervolume, double time, short location) {
+        public Order(int id, string place, byte frequency, byte containers, short containervolume, float time, short location) {
             ID = id;
             Place = place;
             Frequency = frequency;
@@ -225,7 +225,7 @@ namespace GroteOpdrachtV2 {
         public byte Frequency { get; set; }
         public byte ActiveFreq { get; set; }
         public short ContainerVolume { get; set; }
-        public double Time { get; set; }
+        public float Time { get; set; }
         public short Location { get; set; }
         public int LastFreqPenAmount { get; set; }
         public int LastValidPlan { get; set; }
