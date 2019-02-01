@@ -60,6 +60,7 @@ namespace GroteOpdrachtV2 {
                 if (annealingStartT < 5f) {
                     annealingStartT += 25f;
                 }
+                ResetOps();
             }
             Console.WriteLine("Done.");
             Console.ReadLine();
