@@ -112,9 +112,17 @@ namespace GroteOpdrachtV2 {
                 paths[location].YCoord = yCoordinate;
             }
             orderByID.Add(0, new Order(0, "WHAT", 0, 0, 0, DisposalTime / 60, Home));
+            ResetOps();
+        }
+        #endregion Setup
+
+        static void ResetOps() {
             List<OrderPosition> opList = new List<OrderPosition>();
             foreach (Order o in allOrders) {
                 for (int i = 0; i < o.Frequency; i++) {
+                    o.ActiveFreq = 0;
+                    o.LastFreqPenAmount = 0;
+                    o.LastValidPlan = 0;
                     OrderPosition op = new OrderPosition(o, 0, 0, null, false);
                     opList.Add(op);
                     o.Positions[i] = op;
@@ -122,8 +130,8 @@ namespace GroteOpdrachtV2 {
             }
             allPositions = opList.ToArray();
         }
-        #endregion Setup
     }
+
 
     public class DirectionList {
         public DirectionList(short start) {
