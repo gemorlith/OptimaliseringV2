@@ -66,7 +66,16 @@ namespace GroteOpdrachtV2 {
             }
             timeValue += time;
             declineValue += decline;
-            UpdatePenalties(op, time, weight);
+
+            // Begin UpdatePenalties-functie
+            Order o = op.order;
+            timePen += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
+            weightPen += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
+            freqPen += Program.wrongFreqPenalty * (double)Util.IncreaseFreqPenAmount(o);
+            wrongDayPen += Program.wrongDayPentalty * (double)Util.IncreaseInvalidDayPlanning(o);
+            penaltyValue = timePen + weightPen + freqPen + wrongDayPen;
+            // Eind UpdatePenalties-functie
+
             localTimes[truck, day] += time;
             op.cycle.cycleWeight += weight;
             if (penaltyValue < 0) {
@@ -133,6 +142,8 @@ namespace GroteOpdrachtV2 {
             cycles[truck, day].Add(c);
             return c;
         }
+        // Om één of andere reden zorgt het aanroepen van de UpdatePenalties-functie voor problemen in Release-modus.
+        // Daarom hebben we de inhoud van de functie direct in de SetActive-functie gezet.
         public void UpdatePenalties(OrderPosition op, double time, int weight) {
             int truck = op.truck, day = op.Day;
             Order o = op.order;
