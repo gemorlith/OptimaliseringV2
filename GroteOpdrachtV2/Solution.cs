@@ -47,11 +47,11 @@ namespace GroteOpdrachtV2 {
             Order next = NextActive(op);
             int withoutTime = Util.PathValue(prev.Location, next.Location);
             int withTime = Util.PathValue(prev.Location, op.order.Location) + Util.PathValue(op.order.Location, next.Location);
-            float time;
+            double time;
             int truck = op.truck;
             int day = op.Day;
             int weight;
-            float decline;
+            double decline;
             if (setting) {
                 time = op.order.Time + withTime - withoutTime;
                 weight = op.order.ContainerVolume;
@@ -69,7 +69,13 @@ namespace GroteOpdrachtV2 {
             UpdatePenalties(op, time, weight);
             localTimes[truck, day] += time;
             op.cycle.cycleWeight += weight;
-            if (penaltyValue < 0) throw new Exception("Penalty value lager dan nul wtfrick.");
+            if (penaltyValue < 0) {
+                if (timePen < 0) Console.WriteLine("TimePenalty: " + timePen);
+                if (weightPen < 0) Console.WriteLine("WeightPenalty: " + weightPen);
+                if (freqPen < 0) Console.WriteLine("FrequencyPenalty: " + freqPen);
+                if (wrongDayPen < 0) Console.WriteLine("WrongDayPenalty: " + wrongDayPen);
+                throw new Exception("Penalty value lager dan nul wtfrick.");
+            }
             //string yeet;
             //if (setting) yeet = "Na activatie";
             //else yeet = "Na deactivatie";
@@ -127,13 +133,13 @@ namespace GroteOpdrachtV2 {
             cycles[truck, day].Add(c);
             return c;
         }
-        public void UpdatePenalties(OrderPosition op, float time, int weight) {
+        public void UpdatePenalties(OrderPosition op, double time, int weight) {
             int truck = op.truck, day = op.Day;
             Order o = op.order;
             timePen += Program.overTimePenalty * (Math.Max(localTimes[truck, day] + time - Program.MaxTime, 0) - Math.Max(localTimes[truck, day] - Program.MaxTime, 0));
             weightPen += Program.overWeightPenalty * (Math.Max(op.cycle.cycleWeight + weight - Program.MaxCarry, 0) - Math.Max(op.cycle.cycleWeight - Program.MaxCarry, 0));
-            freqPen += Program.wrongFreqPenalty * Util.IncreaseFreqPenAmount(o);
-            wrongDayPen += Program.wrongDayPentalty * Util.IncreaseInvalidDayPlanning(o);
+            freqPen += Program.wrongFreqPenalty * (double)Util.IncreaseFreqPenAmount(o);
+            wrongDayPen += Program.wrongDayPentalty * (double)Util.IncreaseInvalidDayPlanning(o);
             penaltyValue = timePen + weightPen + freqPen + wrongDayPen;
         }
     }
@@ -194,7 +200,7 @@ namespace GroteOpdrachtV2 {
     }
 
     public class Order {
-        public Order(int id, string place, byte frequency, byte containers, short containervolume, float time, short location) {
+        public Order(int id, string place, byte frequency, byte containers, short containervolume, double time, short location) {
             ID = id;
             Place = place;
             Frequency = frequency;
@@ -208,7 +214,7 @@ namespace GroteOpdrachtV2 {
         public byte Frequency { get; set; }
         public byte ActiveFreq { get; set; }
         public short ContainerVolume { get; set; }
-        public float Time { get; set; }
+        public double Time { get; set; }
         public short Location { get; set; }
         public int LastFreqPenAmount { get; set; }
         public int LastValidPlan { get; set; }

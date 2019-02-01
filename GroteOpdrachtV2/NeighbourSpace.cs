@@ -1,8 +1,8 @@
 ﻿namespace GroteOpdrachtV2 {
     public struct ValuePerNeighbour {
-        public float value;
+        public double value;
         public NeighbourSpace type;
-        public ValuePerNeighbour(float value, NeighbourSpace type) {
+        public ValuePerNeighbour(double value, NeighbourSpace type) {
             this.value = value;
             this.type = type;
         }

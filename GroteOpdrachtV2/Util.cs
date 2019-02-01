@@ -51,7 +51,7 @@ namespace GroteOpdrachtV2 {
         }
 
         public static NeighbourSpace NeighbourTypeFromRNG() {
-            float counter = 0;
+            double counter = 0;
             double random = Rnd;
             foreach (ValuePerNeighbour vpn in Program.neighbourOptions) {
                 counter += vpn.value;
