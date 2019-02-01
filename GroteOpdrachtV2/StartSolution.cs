@@ -419,13 +419,16 @@ namespace GroteOpdrachtV2 {
             int nr = int.Parse(inputs[3]);
             Order order = Program.orderByID[nr];
             order.Positions[0].Previous = null;
-            localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location);
-            timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location);
+            localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
+            timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
+            
             Cycle c = new Cycle(day, truck, 0, order.Positions[0]);
             order.Positions[0].cycle = c;
             order.Positions[0].truck = truck;
             order.Positions[0].Day = day;
+            c.cycleWeight += order.ContainerVolume;
             plaatsbaar.Add(order.Positions[0]);
+            order.Positions[0].Active = true;
 
             while ((input = sr.ReadLine()) != null) {
                 inputs = input.Split(';');
@@ -449,13 +452,13 @@ namespace GroteOpdrachtV2 {
                         if (positions[i].cycle == null) {
                             if (previous == null) {
                                 c = new Cycle(day, truck, 0, positions[i]);
-                                localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location);
-                                timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location);
+                                localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
+                                timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
                             }
                             else {
                                 previous.Next = positions[i];
-                                localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location);
-                                timeVal += Util.PathValue(previous.order.Location, order.Location);
+                                localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location) + order.Time;
+                                timeVal += Util.PathValue(previous.order.Location, order.Location) + order.Time;
 
                             }
                             positions[i].Active = true;
@@ -471,10 +474,11 @@ namespace GroteOpdrachtV2 {
                     }
                 }
             }
-            
+            int declinedAmount = 0;
             foreach (OrderPosition op in Program.allPositions) {
                 if (!op.Active) {
-                    declineVal += op.order.ContainerVolume * 3;
+                    declineVal += op.order.Time * 3;
+                    declinedAmount++;
                     int index = (int)(Util.Rnd * (plaatsbaar.Count + allCycles.Count));
                     if (index < plaatsbaar.Count) {
                         op.Previous = plaatsbaar[index];
@@ -510,7 +514,7 @@ namespace GroteOpdrachtV2 {
                     }
                 }
             }
-           
+            
             sr.Close();
             return new Solution(timeVal, declineVal, penaltyVal, localtimes, cycles);
         }
