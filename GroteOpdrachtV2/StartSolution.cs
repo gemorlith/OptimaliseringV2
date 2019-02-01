@@ -429,6 +429,7 @@ namespace GroteOpdrachtV2 {
             c.cycleWeight += order.ContainerVolume;
             plaatsbaar.Add(order.Positions[0]);
             order.Positions[0].Active = true;
+            previous = order.Positions[0];
 
             while ((input = sr.ReadLine()) != null) {
                 inputs = input.Split(';');

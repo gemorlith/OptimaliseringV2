@@ -12,10 +12,10 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = 0f;//150
-        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution(6187).txt");
+        public static float annealingStartT = 10f;//150
+        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const int maxIterations = 500000000;//10000000?
+        public const int maxIterations = 250000000;//10000000?
         public const double annealingQPerNSSize = 8;//8
         public const float alpha = 0.995f;//0.99
         public const double overTimePenalty = 8;//?

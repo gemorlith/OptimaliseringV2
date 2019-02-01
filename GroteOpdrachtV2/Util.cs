@@ -230,7 +230,7 @@ namespace GroteOpdrachtV2 {
                 bool[] test3 = new bool[3];
                 foreach (int b in planning) {
                     int dv = b / 2;
-                    if (b % 3 != 1 || test3[dv]) return true;
+                    if (b % 2 != 1 || test3[dv]) return true;
                     test3[dv] = true;
                 }
                 return false;

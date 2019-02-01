@@ -23,7 +23,7 @@ namespace GroteOpdrachtV2 {
                 Util.IncreaseFreqPenAmount(o);
                 Util.IncreaseInvalidDayPlanning(o);
             }
-            
+            Util.Test(this);
         }
         public Order NextActive(OrderPosition o) {
             OrderPosition next = o.Next;
@@ -67,7 +67,9 @@ namespace GroteOpdrachtV2 {
                 time = -op.order.Time + withoutTime - withTime;
                 weight = -op.order.ContainerVolume;
                 decline = op.order.Time * 3;
-                if (prev == Program.HomeOrder && next == Program.HomeOrder) time -= Program.HomeOrder.Time;
+                if (prev == Program.HomeOrder && next == Program.HomeOrder) {
+                    time -= Program.HomeOrder.Time;
+                }
             }
             timeValue += time;
             declineValue += decline;
