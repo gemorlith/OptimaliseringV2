@@ -13,7 +13,7 @@ namespace GroteOpdrachtV2 {
 
         #region Parameters
         public static float annealingStartT = 0f;//150
-        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution(5737).txt");
+        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution(6187).txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
         public const int maxIterations = 500000000;//10000000?
         public const double annealingQPerNSSize = 8;//8

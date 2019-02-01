@@ -19,6 +19,11 @@ namespace GroteOpdrachtV2 {
                     allCycles.Add(c);
                 }
             }
+            foreach (Order o in Program.allOrders) {
+                Util.IncreaseFreqPenAmount(o);
+                Util.IncreaseInvalidDayPlanning(o);
+            }
+            
         }
         public Order NextActive(OrderPosition o) {
             OrderPosition next = o.Next;
