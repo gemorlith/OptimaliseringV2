@@ -12,22 +12,22 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = .0f;//150
+        public static float annealingStartT = .1f;//150
         public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const int maxIterations = 130000000;//10000000?
-        public const double annealingQPerNSSize = 8;//8
-        public const float alpha = 0.995f;//0.99
+        public const int maxIterations = 500000000;//10000000?
+        public const double annealingQPerNSSize = 16;//8
+        public const float alpha = 0.998f;//0.99
         public const double overTimePenaltyBase = 8;//?       
         public const double overWeightPenaltyBase = 100;//>15
-        public const double wrongFreqPenaltyBase = 30;//10000
-        public const double wrongDayPentaltyBase = 30;//10000
+        public const double wrongFreqPenaltyBase = 800;//10000
+        public const double wrongDayPentaltyBase = 800;//10000
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
         public const double timePenInc = 1;//crashes if <> 1
         public const double weightPenInc = 1;
-        public const double dayPenInc = 1.03;
-        public const double freqPenInc = 1.03;
+        public const double dayPenInc = 1;
+        public const double freqPenInc = 1;
         #endregion Parameters
 
         #region Constants
@@ -60,7 +60,8 @@ namespace GroteOpdrachtV2 {
             neighbourOptions = new List<ValuePerNeighbour> {
                 new ValuePerNeighbour(0.1f, new ToggleSpace()),
                 new ValuePerNeighbour(0.4f, new ActivateSpace()),
-                new ValuePerNeighbour(0.5f, new MoveSpace())
+                new ValuePerNeighbour(0.49f, new MoveSpace()),
+                new ValuePerNeighbour(0.01f, new Opt2Space())
             };
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();

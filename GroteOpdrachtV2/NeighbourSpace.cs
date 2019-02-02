@@ -72,4 +72,25 @@
             return new MoveNeighbour(solution, op, prev, day, truck, cycle);
         }
     }
+
+    public class Opt2Space : NeighbourSpace {
+        public override bool IsEmpty(Solution solution) {
+            return false;
+        }
+        public override Neighbour RndNeighbour(Solution solution) {
+            int rnd = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition startOp = Program.allPositions[rnd];
+            OrderPosition op = startOp;
+            int count = 0;
+            while(op.Next != null) {
+                count++;
+                op = op.Next;
+            }
+            int length = (int)(Util.Rnd * count)+1;
+
+
+            return new Opt2Neighbour(solution, startOp, length);
+        }
+    }
+
 }

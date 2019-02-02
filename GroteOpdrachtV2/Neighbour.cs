@@ -99,4 +99,54 @@ namespace GroteOpdrachtV2 {
             return shadow;
         }
     }
+
+    public class Opt2Neighbour : Neighbour {
+        OrderPosition op;
+        int length;
+        OrderPosition lastOp;
+        OrderPosition[] nodes;
+        byte truck;
+        byte day;
+        Cycle cycle;
+        bool[] nodeStat;
+        public Opt2Neighbour(Solution s, OrderPosition op, int length) {
+            this.s = s;
+            this.op = op;
+            this.length = length;
+            nodes = new OrderPosition[length];
+            nodeStat = new bool[length];
+            truck = op.truck;
+            day = op.Day;
+            cycle = op.cycle;
+        }
+        public override void Apply() {
+            OrderPosition before = op.Previous;
+            OrderPosition curOp = op;
+            OrderPosition nextOp = null;
+            for (int i = 0; i < length; i++) {
+                nodes[i] = curOp;
+                nodeStat[i] = curOp.Active;
+                if (curOp.Active) {
+                    s.SetActive(false, curOp);
+                }
+                nextOp = curOp.Next;
+                s.RemoveOrder(curOp, false);
+                curOp = nextOp;
+            }
+            lastOp = nodes[length - 1];
+            for (int i = length - 1; i >= 0; i--) {
+                s.AddOrder(nodes[i], before, truck, day, cycle, false);
+                before = nodes[i];
+                if (nodeStat[i]) {
+                    s.SetActive(true, before);
+                }
+            }
+        }
+        public override Neighbour Reverse() {
+            return new Opt2Neighbour(s, lastOp, length);
+        }
+        public override int ShadowGain() {
+            return 0; // Will almost never be called, but we can still implement it sometime if we have spare time.
+        }
+    }
 }
