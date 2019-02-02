@@ -5,15 +5,16 @@ namespace GroteOpdrachtV2 {
     public abstract class SearchType {
         public virtual void Search() { }
         public void Compare(Solution s) {
-            if (s.Value < Program.minValue && s.penaltyValue == 0) {
-                Program.minValue = s.Value;
-                Console.WriteLine("Better solution found: " + s.Value);
+            double solVal = s.Value;
+            if (solVal < Program.minValue && s.penaltyValue == 0) {
+                Program.minValue = solVal;
+                Console.WriteLine("Better solution found: " + solVal);
                 Util.SaveSolution(s);
             }
-            if (s.Value < Program.unviableMinValue && s.penaltyValue >= 0) {
-                Program.unviableMinValue = s.Value;
+            if (solVal < Program.unviableMinValue && s.penaltyValue >= 0) {
+                Program.unviableMinValue = solVal;
                 if (s.penaltyValue > 0)
-                    Console.WriteLine("unv. sol.: ±" + (int)s.Value);
+                    Console.WriteLine("unv. sol.: ±" + (int)solVal);
                 Util.SaveSolution(s, "../../Solutions/UnviableBest.txt");
             }
         }
