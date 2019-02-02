@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GroteOpdrachtV2 {
     public abstract class StartSolutionGenerator {
-        public abstract Solution Generate();
+        public abstract Solution Generate(Random rng, int[,] paths, OrderPosition[] allPositions, List<Order> allOrders);
     }
 
     /*public class DefaultGeneratorMK1 : StartSolutionGenerator {
@@ -326,7 +327,7 @@ namespace GroteOpdrachtV2 {
     }*/
 
     public class EmptyGenerator : StartSolutionGenerator {
-        public override Solution Generate() {
+        public override Solution Generate(Random rng, int[,] paths, OrderPosition[] allPositions, List<Order> allOrders) {
             double declineVal = 0;
             double[,] localtimes = new double[2, 5];
             List<Cycle>[,] cycles = new List<Cycle>[2, 5];
@@ -337,21 +338,21 @@ namespace GroteOpdrachtV2 {
             }
             Cycle c = new Cycle(0, 0, 0, null);
             OrderPosition prev = null;
-            foreach (Order o in Program.allOrders) {
+            foreach (Order o in allOrders) {
                 declineVal += o.Time * 3 * o.Frequency;
             }
-            foreach (OrderPosition op in Program.allPositions) {
+            foreach (OrderPosition op in allPositions) {
                 op.cycle = c;
-                op.Previous = prev;
+                op.SetPrevious(prev, paths);
                 if (prev != null) {
-                    prev.Next = op;
+                    prev.SetNext(op, paths);
                 }
                 prev = op;
             }
-            prev.Next = null;
-            c.first = Program.allPositions[0];
+            prev.SetNext(null, paths);
+            c.first = allPositions[0];
             cycles[0, 0].Add(c);
-            return new Solution(0, declineVal, 0, localtimes, cycles);
+            return new Solution(paths, allOrders, allPositions, 0, declineVal, 0, localtimes, cycles);
         }
     }
 
@@ -393,7 +394,8 @@ namespace GroteOpdrachtV2 {
         public ReadGenerator(string path) {
             this.path = path;
         }
-        public override Solution Generate() {
+        public override Solution Generate(Random rng, int[,] paths, OrderPosition[] allPositions, List<Order> allOrders)
+        {
             System.IO.StreamReader sr = new System.IO.StreamReader(path);
             string input;
             string[] inputs;
@@ -418,9 +420,9 @@ namespace GroteOpdrachtV2 {
             int counter = int.Parse(inputs[2]);
             int nr = int.Parse(inputs[3]);
             Order order = Program.orderByID[nr];
-            order.Positions[0].Previous = null;
-            localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
-            timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
+            order.Positions[0].SetPrevious(null, paths);
+            localtimes[truck, day] += Util.PathValue(paths, Program.HomeOrder.Location, order.Location) + order.Time;
+            timeVal += Util.PathValue(paths, Program.HomeOrder.Location, order.Location) + order.Time;
             
             Cycle c = new Cycle(day, truck, 0, order.Positions[0]);
             order.Positions[0].cycle = c;
@@ -440,11 +442,11 @@ namespace GroteOpdrachtV2 {
                 order = Program.orderByID[nr];
                 
                 if (nr == 0) {
-                    previous.Next = null;
+                    previous.SetNext(null, paths);
                     cycles[truck, day].Add(c);
                     allCycles.Add(c);
-                    localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location) + Program.DisposalTime;
-                    timeVal += Util.PathValue(previous.order.Location, order.Location) + Program.DisposalTime;
+                    localtimes[truck, day] += Util.PathValue(paths, previous.order.Location, order.Location) + Program.DisposalTime;
+                    timeVal += Util.PathValue(paths, previous.order.Location, order.Location) + Program.DisposalTime;
                     previous = null;
                 }
                 else {
@@ -453,17 +455,17 @@ namespace GroteOpdrachtV2 {
                         if (positions[i].cycle == null) {
                             if (previous == null) {
                                 c = new Cycle(day, truck, 0, positions[i]);
-                                localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
-                                timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
+                                localtimes[truck, day] += Util.PathValue(paths, Program.HomeOrder.Location, order.Location) + order.Time;
+                                timeVal += Util.PathValue(paths, Program.HomeOrder.Location, order.Location) + order.Time;
                             }
                             else {
-                                previous.Next = positions[i];
-                                localtimes[truck, day] += Util.PathValue(previous.order.Location, order.Location) + order.Time;
-                                timeVal += Util.PathValue(previous.order.Location, order.Location) + order.Time;
+                                previous.SetNext(positions[i], paths);
+                                localtimes[truck, day] += Util.PathValue(paths, previous.order.Location, order.Location) + order.Time;
+                                timeVal += Util.PathValue(paths, previous.order.Location, order.Location) + order.Time;
 
                             }
                             positions[i].Active = true;
-                            positions[i].Previous = previous;
+                            positions[i].SetPrevious(previous, paths);
                             positions[i].cycle = c;
                             positions[i].Day = day;
                             positions[i].truck = truck;
@@ -476,28 +478,28 @@ namespace GroteOpdrachtV2 {
                 }
             }
             int declinedAmount = 0;
-            foreach (OrderPosition op in Program.allPositions) {
+            foreach (OrderPosition op in allPositions) {
                 if (!op.Active) {
                     declineVal += op.order.Time * 3;
                     declinedAmount++;
-                    int index = (int)(Util.Rnd * (plaatsbaar.Count + allCycles.Count));
+                    int index = (int)(rng.NextDouble() * (plaatsbaar.Count + allCycles.Count));
                     if (index < plaatsbaar.Count) {
-                        op.Previous = plaatsbaar[index];
-                        op.Next = plaatsbaar[index].Next;
-                        op.Previous.Next = op;
+                        op.SetPrevious(plaatsbaar[index], paths);
+                        op.SetNext(plaatsbaar[index].Next, paths);
+                        op.Previous.SetNext(op, paths);
                         op.cycle = plaatsbaar[index].cycle;
                         op.Day = plaatsbaar[index].Day;
                         op.truck = plaatsbaar[index].truck;
                         if (op.Next != null) {
-                            op.Next.Previous = op; 
+                            op.Next.SetPrevious(op, paths); 
                         }
                     } else {
-                        op.Next = allCycles[index - plaatsbaar.Count].first;
+                        op.SetNext(allCycles[index - plaatsbaar.Count].first, paths);
                         op.cycle = allCycles[index - plaatsbaar.Count].first.cycle;
                         op.Day = allCycles[index - plaatsbaar.Count].first.Day;
                         op.truck = allCycles[index - plaatsbaar.Count].first.truck;
                         allCycles[index - plaatsbaar.Count].first = op;
-                        op.Next.Previous = op;
+                        op.Next.SetPrevious(op, paths);
 
                     }
                 }
@@ -517,7 +519,7 @@ namespace GroteOpdrachtV2 {
             }
             
             sr.Close();
-            return new Solution(timeVal, declineVal, penaltyVal, localtimes, cycles);
+            return new Solution(paths, allOrders, allPositions, timeVal, declineVal, penaltyVal, localtimes, cycles);
         }
     }
 }

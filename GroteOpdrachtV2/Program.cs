@@ -13,8 +13,8 @@ namespace GroteOpdrachtV2 {
 
         #region Parameters
         public static float annealingStartT = .0f;//150
-        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
-        public static SearchType Searcher = new SimulatedAnnealingMK1();
+        private static readonly StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
+        private static readonly SearchType Searcher = new SimulatedAnnealingMK1();
         public const int maxIterations = 130000000;//10000000?
         public const double annealingQPerNSSize = 8;//8
         public const float alpha = 0.995f;//0.99
@@ -22,9 +22,9 @@ namespace GroteOpdrachtV2 {
         public const double overWeightPenaltyBase = 100;//>15
         public const double wrongFreqPenaltyBase = 30;//10000
         public const double wrongDayPentaltyBase = 30;//10000
-        public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
         public const double timePenInc = 1;//crashes if <> 1
+        private static List<ValuePerNeighbour> neighborOptions; // Initialised in Main()
         public const double weightPenInc = 1;
         public const double dayPenInc = 1.03;
         public const double freqPenInc = 1.03;
@@ -35,18 +35,18 @@ namespace GroteOpdrachtV2 {
         public const int MaxTime = 12 * 60 * 60;
         public const short DisposalTime = 30 * 60;
         public const short Home = 287;
-        public static Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
+        public static readonly Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
         public static int MaxPrint = maxIterations / printFreq;
         #endregion Constants
 
         #region Variables
         public static double minValue = double.MaxValue;
         public static double unviableMinValue = double.MaxValue;
-        public static int[,] paths = new int[1099,1099];
-        public static List<Order> allOrders = new List<Order>();
-        public static OrderPosition[] allPositions;
+        private static int[,] paths = new int[1099,1099];
+        private static List<Order> allOrders = new List<Order>();
+        private static OrderPosition[] allPositions;
         public static Dictionary<int, Order> orderByID = new Dictionary<int, Order>();
-        public static Random random = new Random();
+        private static Random random = new Random();
         public static double overTimePenalty = overTimePenaltyBase;
         public static double overWeightPenalty = overWeightPenaltyBase;
         public static double wrongFreqPenalty = wrongDayPentaltyBase;
@@ -57,13 +57,13 @@ namespace GroteOpdrachtV2 {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             GetDistances();
             GetOrders();
-            neighbourOptions = new List<ValuePerNeighbour> {
+            neighborOptions = new List<ValuePerNeighbour> {
                 new ValuePerNeighbour(0.1f, new ToggleSpace()),
                 new ValuePerNeighbour(0.4f, new ActivateSpace()),
                 new ValuePerNeighbour(0.5f, new MoveSpace())
             };
             for (int i = 0; i < 10000; i++) {
-                Searcher.Search();
+                Searcher.Search(random, paths, Generator, neighborOptions, allPositions, allOrders);
                 Console.WriteLine(i);
                 annealingStartT *= 0.8f;
                 if (annealingStartT < 0.05f) {
