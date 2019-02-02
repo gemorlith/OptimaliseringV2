@@ -12,22 +12,23 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = .1f;//150
-        public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
+        public static float annealingStartT = 50f;//150
+        //public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
+        public static StartSolutionGenerator Generator = new EmptyGenerator();
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const int maxIterations = 500000000;//10000000?
+        public const int maxIterations = 2000000000;//10000000?
         public const double annealingQPerNSSize = 16;//8
         public const float alpha = 0.998f;//0.99
         public const double overTimePenaltyBase = 8;//?       
         public const double overWeightPenaltyBase = 100;//>15
-        public const double wrongFreqPenaltyBase = 800;//10000
-        public const double wrongDayPentaltyBase = 800;//10000
+        public const double wrongFreqPenaltyBase = 400;//10000
+        public const double wrongDayPentaltyBase = 1200;//10000
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
-        public const double timePenInc = 1;//crashes if <> 1
-        public const double weightPenInc = 1;
-        public const double dayPenInc = 1;
-        public const double freqPenInc = 1;
+        public const double timePenMult = 1;//crashes if <> 1
+        public const double weightPenMult = 1;
+        public const double dayPenMult = 1;
+        public const double freqPenMult = 1;
         #endregion Parameters
 
         #region Constants
@@ -58,10 +59,12 @@ namespace GroteOpdrachtV2 {
             GetDistances();
             GetOrders();
             neighbourOptions = new List<ValuePerNeighbour> {
-                new ValuePerNeighbour(0.1f, new ToggleSpace()),
-                new ValuePerNeighbour(0.4f, new ActivateSpace()),
-                new ValuePerNeighbour(0.49f, new MoveSpace()),
-                new ValuePerNeighbour(0.01f, new Opt2Space())
+                new ValuePerNeighbour(0.001f, new ToggleSpace()),
+                new ValuePerNeighbour(0.499f, new ActivateSpace()),
+                new ValuePerNeighbour(0.22f, new MoveSpace()),
+                new ValuePerNeighbour(0.1f, new SwapSpace()),
+                new ValuePerNeighbour(0.01f, new Opt2Space()),
+                new ValuePerNeighbour(1.17f, new MoveAndActivateSpace())
             };
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();

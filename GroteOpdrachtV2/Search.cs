@@ -86,6 +86,9 @@ namespace GroteOpdrachtV2 {
                 }
                 //if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
             }
+            else {
+                int kaas = 103765;
+            }
         }
         protected override void Reset() {
             QLeft = 1;
@@ -103,14 +106,14 @@ namespace GroteOpdrachtV2 {
             if (QLeft < 0) {
                 QLeft = 1;
                 T *= Program.alpha;
-                Program.overWeightPenalty *= Program.weightPenInc;
-                Program.overTimePenalty *= Program.timePenInc;
-                Program.wrongFreqPenalty *= Program.freqPenInc;
-                Program.wrongDayPentalty *= Program.dayPenInc;
-                s.freqPen *= Program.freqPenInc;
-                s.timePen *= Program.timePenInc;
-                s.weightPen *= Program.weightPenInc;
-                s.wrongDayPen *= Program.dayPenInc;
+                Program.overWeightPenalty *= Program.weightPenMult;
+                Program.overTimePenalty *= Program.timePenMult;
+                Program.wrongFreqPenalty *= Program.freqPenMult;
+                Program.wrongDayPentalty *= Program.dayPenMult;
+                s.freqPen *= Program.freqPenMult;
+                s.timePen *= Program.timePenMult;
+                s.weightPen *= Program.weightPenMult;
+                s.wrongDayPen *= Program.dayPenMult;
             }
         }
         private bool ApplyNegativeAnyways(double gain) {

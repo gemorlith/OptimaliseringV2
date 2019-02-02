@@ -60,11 +60,13 @@ namespace GroteOpdrachtV2 {
             initialShadow = op.Shadow;
         }
         public override void Apply() {
-            bool active = op.Active;
-            if (active) s.SetActive(false, op);
-            s.RemoveOrder(op);
-            s.AddOrder(op, newPrevious, truck, day, cycle);
-            if (active) s.SetActive(true, op);
+            if (op != newPrevious) {
+                bool active = op.Active;
+                if (active) s.SetActive(false, op);
+                s.RemoveOrder(op);
+                s.AddOrder(op, newPrevious, truck, day, cycle);
+                if (active) s.SetActive(true, op);
+            }
         }
         public override Neighbour Reverse() {
             return new MoveNeighbour(s, op, oldPrevious, oldDay, oldTruck, oldCycle);
@@ -147,6 +149,44 @@ namespace GroteOpdrachtV2 {
         }
         public override int ShadowGain() {
             return 0; // Will almost never be called, but we can still implement it sometime if we have spare time.
+        }
+    }
+    
+    public class MoveAndSet : Neighbour {
+        Solution s;
+        OrderPosition op;
+        OrderPosition newPrevious;
+        MoveNeighbour mn;
+        Cycle cycle;
+        bool active,status;
+        byte day, truck;
+        int initialShadow;
+        public MoveAndSet(Solution s, OrderPosition op, OrderPosition newPrevious, byte day, byte truck, Cycle cycle, bool status) {
+            this.s = s;
+            this.op = op;
+            this.newPrevious = newPrevious;
+            this.day = day;
+            this.truck = truck;
+            this.cycle = cycle;
+            this.status = status;
+            mn = new MoveNeighbour(s, op, newPrevious, day, truck, cycle);
+            active = op.Active;
+            initialShadow = op.Shadow;
+        }
+        public override void Apply() {
+            mn.Apply();
+            if (active != status) {
+                s.SetActive(status, op);
+            }
+        }
+        public override Neighbour Reverse() {
+            if (active == status) {
+                return mn.Reverse();
+            }
+            return new MoveAndSet(s, op, newPrevious, day, truck, cycle, active);
+        }
+        public override int ShadowGain() {
+            return op.Shadow - initialShadow;
         }
     }
 }
