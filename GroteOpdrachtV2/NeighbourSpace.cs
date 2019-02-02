@@ -1,5 +1,7 @@
-﻿namespace GroteOpdrachtV2 {
-    public struct ValuePerNeighbour {
+﻿using System.Collections.Generic;
+
+namespace GroteOpdrachtV2 {
+    public class ValuePerNeighbour {
         public float value;
         public NeighbourSpace type;
         public ValuePerNeighbour(float value, NeighbourSpace type) {
@@ -29,7 +31,7 @@
         }
         public override Neighbour RndNeighbour(Solution solution) {
             int count = 0;
-            while(count < 100) {
+            while (count < 100) {
                 count++;
                 int rnd = (int)(Util.Rnd * Program.allPositions.Length);
                 OrderPosition op = Program.allPositions[rnd];
@@ -82,7 +84,7 @@
             int rnd2 = (int)(Util.Rnd * Program.allPositions.Length - 1);
             if (rnd2 >= rnd1) rnd2++;
             OrderPosition op2 = Program.allPositions[rnd2];
-            
+
 
             return new SwapNeighbour(solution, op1, op2);
         }
@@ -97,7 +99,7 @@
             OrderPosition startOp = Program.allPositions[rnd];
             OrderPosition op = startOp;
             int count = 0;
-            while(op.Next != null) {
+            while (op.Next != null) {
                 count++;
                 op = op.Next;
             }
@@ -137,8 +139,37 @@
                 int truckday = rnd - Program.allPositions.Length - solution.allCycles.Count;
                 truck = (byte)(truckday % 2); day = (byte)(truckday % 5);
             }
-            return new MoveAndSet(solution, op, prev, day, truck, cycle, true);
+            return new MoveAndSetNeighbour(solution, op, prev, day, truck, cycle, true);
         }
     }
 
+    /*public class MoveAllPositionsSpace : NeighbourSpace {
+        public override bool IsEmpty(Solution solution) {
+            return false;
+        }
+        public override Neighbour RndNeighbour(Solution solution) {
+            int ind = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition op = Program.allPositions[ind];
+            OrderPosition[] positions = op.order.Positions;
+            List<byte> days = Util.DaysFromRandom(op.order.Frequency);
+            Neighbour[] ns = new Neighbour[positions.Length];
+            for (int i = 0; i < ns.Length; i++) {
+                ns[i] = Util.MoveToDay(solution, positions[i], days[i]);
+            }
+            return new MultipleDayNeighbour(solution, positions, days);
+        }
+    }*/
+
+    public class ToggleOrderSpace : NeighbourSpace {
+        public override bool IsEmpty(Solution solution) {
+            return false;
+        }
+        public override Neighbour RndNeighbour(Solution solution) {
+            int ind = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition op = Program.allPositions[ind];
+            Order o = op.order;
+            bool status = Util.RndBool;
+            return new ToggleOrderNeighbour(solution, o, status);
+        }
+    }
 }

@@ -6,6 +6,8 @@ namespace GroteOpdrachtV2 {
     class Util {
         public static double Rnd { get { return Program.random.NextDouble(); } }
 
+        public static bool RndBool { get { return Program.random.Next(0, 2) == 1; } }
+
         public static void SaveSolution(Solution s, string path = "../../Solutions/BestSolution.txt") {
             StreamWriter sw = new StreamWriter(path) { AutoFlush = true };
             int counter = 0;
@@ -50,15 +52,15 @@ namespace GroteOpdrachtV2 {
             sw.Close();
         }
 
-        //public static void NormalizeVPNs(List<ValuePerNeighbour> vpnList) {
-        //    float total = 0;
-        //    foreach (ValuePerNeighbour vpn in vpnList) {
-        //        total += vpn.value;
-        //    }
-        //    foreach (ValuePerNeighbour vpn in vpnList) {
-        //        vpn.value = vpn.value / total;
-        //    }
-        //}
+        public static void NormalizeVPNs(List<ValuePerNeighbour> vpnList) {
+            float total = 0;
+            foreach (ValuePerNeighbour vpn in vpnList) {
+                total += vpn.value;
+            }
+            foreach (ValuePerNeighbour vpn in vpnList) {
+                vpn.value = vpn.value / total;
+            }
+        }
 
         public static NeighbourSpace NeighbourTypeFromRNG() {
             double counter = 0;
@@ -71,17 +73,29 @@ namespace GroteOpdrachtV2 {
             throw new Exception("Shit's broken: total chance of neighbourType < 1");
         }
 
-        public static List<int> DaysFromRandom(int freq) {
-            List<int> days = new List<int>();
+        public static Neighbour MoveToDay(Solution solution, OrderPosition op, byte day) {
+            for (int i = 0; i < 200; i++) {
+                int ind = (int)(Rnd * Program.allPositions.Length);
+                OrderPosition op2 = Program.allPositions[ind];
+                if (op2.Day == day) {
+                    return new MoveAndSetNeighbour(solution, op, op2, day, op2.truck, op2.cycle, true);
+                }
+            }
+            byte truck = (byte)(Rnd * 2);
+            return new MoveAndSetNeighbour(solution, op, null, day, truck, null, true);
+        }
+
+        public static List<byte> DaysFromRandom(int freq) {
+            List<byte> days = new List<byte>();
             if (freq == 1) {
                 double random = Rnd;
-                days.Add((int)(random * 5));
+                days.Add((byte)(random * 5));
             }
             if (freq == 2) {
                 double random = Rnd;
-                int fst = (int)(random * 2);
+                byte fst = (byte)(random * 2);
                 days.Add(fst);
-                days.Add(fst + 3);
+                days.Add((byte)(fst + 3));
             }
             if (freq == 3) {
                 days.Add(0);
@@ -90,8 +104,8 @@ namespace GroteOpdrachtV2 {
             }
             if (freq == 4) {
                 double random = Rnd;
-                int not = (int)(random * 5);
-                for (int i = 0; i < 5; i++) {
+                byte not = (byte)(random * 5);
+                for (byte i = 0; i < 5; i++) {
                     if (i != not) {
                         days.Add(i);
                     }
@@ -100,21 +114,21 @@ namespace GroteOpdrachtV2 {
             return days;
         }
 
-        public static List<int> DaysFromPreference(int freq, int preference) {
-            List<int> days = new List<int>();
+        public static List<byte> DaysFromPreference(int freq, byte preference) {
+            List<byte> days = new List<byte>();
             if (freq == 1) {
                 days.Add(preference);
             }
             else if (freq == 2) {
                 if (preference == 2) {
                     double random = Rnd;
-                    int fst = (int)(random * 2);
+                    byte fst = (byte)(random * 2);
                     days.Add(fst);
-                    days.Add(fst + 3);
+                    days.Add((byte)(fst + 3));
                 }
                 else {
                     days.Add(preference);
-                    days.Add((preference + 3) % 6);
+                    days.Add((byte)((preference + 3) % 6));
                 }
             }
             else if (freq == 3) {
@@ -124,9 +138,9 @@ namespace GroteOpdrachtV2 {
             }
             else if (freq == 4) {
                 double random = Rnd;
-                int not = (int)(random * 4);
+                byte not = (byte)(random * 4);
                 if (not >= preference) not++;
-                for (int i = 0; i < 5; i++) {
+                for (byte i = 0; i < 5; i++) {
                     if (i != not) {
                         days.Add(i);
                     }

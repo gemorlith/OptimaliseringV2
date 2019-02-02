@@ -19,7 +19,7 @@ namespace GroteOpdrachtV2 {
         }
     }
 
-    public class Bruteforce : SearchType {
+    public class BruteForce : SearchType {
         public override void Search() {
             for (int i = 0; i < 10000; i++) {
                 Solution s = Program.Generator.Generate();
@@ -31,8 +31,8 @@ namespace GroteOpdrachtV2 {
         }
     }
 
-    public abstract class Localsearch : SearchType {
-        protected int counter = 0;
+    public abstract class LocalSearch : SearchType {
+        protected long counter = 0;
         public override void Search() {
             SearchFrom(Program.Generator.Generate());
         }
@@ -63,7 +63,7 @@ namespace GroteOpdrachtV2 {
         public abstract void TryNeighbour(Solution s);
     }
 
-    public class SimulatedAnnealingMK1 : Localsearch {
+    public class SimulatedAnnealingMK1 : LocalSearch {
         protected double QLeft = 1;
         protected float T = Program.annealingStartT;
 

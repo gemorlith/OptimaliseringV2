@@ -7,8 +7,8 @@ namespace GroteOpdrachtV2 {
     class Program {
 
         #region Debug
-        public const int printFreq = 100000;
-        public const int saveFreq = 50; //saves solution in temp file every [pasteFreq * saveFreq] neighbours
+        public const long printFreq = 100000;
+        public const long saveFreq = 50; //saves solution in temp file every [pasteFreq * saveFreq] neighbours
         #endregion Debug
 
         #region Parameters
@@ -16,7 +16,7 @@ namespace GroteOpdrachtV2 {
         //public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         public static StartSolutionGenerator Generator = new EmptyGenerator();
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const int maxIterations = 2000000000;//10000000?
+        public const long maxIterations = 2000000000;//10000000?
         public const double annealingQPerNSSize = 16;//8
         public const float alpha = 0.998f;//0.99
         public const double overTimePenaltyBase = 8;//?       
@@ -37,7 +37,7 @@ namespace GroteOpdrachtV2 {
         public const short DisposalTime = 30 * 60;
         public const short Home = 287;
         public static Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
-        public static int MaxPrint = maxIterations / printFreq;
+        public static long MaxPrint = maxIterations / printFreq;
         #endregion Constants
 
         #region Variables
@@ -64,8 +64,10 @@ namespace GroteOpdrachtV2 {
                 new ValuePerNeighbour(0.22f, new MoveSpace()),
                 new ValuePerNeighbour(0.1f, new SwapSpace()),
                 new ValuePerNeighbour(0.01f, new Opt2Space()),
-                new ValuePerNeighbour(1.17f, new MoveAndActivateSpace())
+                new ValuePerNeighbour(0.17f, new MoveAndActivateSpace()),
+                new ValuePerNeighbour(0f, new ToggleOrderSpace())
             };
+            Util.NormalizeVPNs(neighbourOptions);
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();
                 Console.WriteLine(i);
