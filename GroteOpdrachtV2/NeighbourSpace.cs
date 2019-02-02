@@ -28,13 +28,12 @@
             return false;
         }
         public override Neighbour RndNeighbour(Solution solution) {
-            bool active = false;
             int count = 0;
             while(count < 100) {
                 count++;
                 int rnd = (int)(Util.Rnd * Program.allPositions.Length);
                 OrderPosition op = Program.allPositions[rnd];
-                if (op.Active) return new DisableNeighbour(solution, op);
+                if (!op.Active) return new ActivateNeighbour(solution, op);
             }
             return null;
         }
@@ -73,6 +72,22 @@
         }
     }
 
+    public class SwapSpace : NeighbourSpace {
+        public override bool IsEmpty(Solution solution) {
+            return false;
+        }
+        public override Neighbour RndNeighbour(Solution solution) {
+            int rnd1 = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition op1 = Program.allPositions[rnd1];
+            int rnd2 = (int)(Util.Rnd * Program.allPositions.Length - 1);
+            if (rnd2 >= rnd1) rnd2++;
+            OrderPosition op2 = Program.allPositions[rnd2];
+            
+
+            return new SwapNeighbour(solution, op1, op2);
+        }
+    }
+
     public class Opt2Space : NeighbourSpace {
         public override bool IsEmpty(Solution solution) {
             return false;
@@ -86,10 +101,43 @@
                 count++;
                 op = op.Next;
             }
-            int length = (int)(Util.Rnd * count)+1;
+            int length = (int)(Util.Rnd * count) + 1;
 
 
             return new Opt2Neighbour(solution, startOp, length);
+        }
+    }
+
+    public class MoveAndActivateSpace : NeighbourSpace {
+        public override bool IsEmpty(Solution solution) {
+            return false;
+        }
+        public override Neighbour RndNeighbour(Solution solution) {
+            int ind = (int)(Util.Rnd * Program.allPositions.Length);
+            OrderPosition op = Program.allPositions[ind];
+            int amount = Program.allPositions.Length - 1 + solution.allCycles.Count + 10;
+            int rnd = (int)(Util.Rnd * amount);
+            if (rnd >= ind) rnd++;
+            OrderPosition prev;
+            Cycle cycle;
+            byte truck, day;
+            if (rnd < Program.allPositions.Length) { // Move to after an existing order
+                prev = Program.allPositions[rnd];
+                cycle = prev.cycle;
+                truck = prev.truck; day = prev.Day;
+            }
+            else if (rnd < Program.allPositions.Length + solution.allCycles.Count) { // Move to beginning of existing cycle
+                prev = null;
+                cycle = solution.allCycles[rnd - Program.allPositions.Length];
+                truck = cycle.truck; day = cycle.day;
+            }
+            else { // Create new cycle
+                prev = null;
+                cycle = null;
+                int truckday = rnd - Program.allPositions.Length - solution.allCycles.Count;
+                truck = (byte)(truckday % 2); day = (byte)(truckday % 5);
+            }
+            return new MoveAndSet(solution, op, prev, day, truck, cycle, true);
         }
     }
 

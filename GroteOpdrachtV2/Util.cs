@@ -50,6 +50,16 @@ namespace GroteOpdrachtV2 {
             sw.Close();
         }
 
+        //public static void NormalizeVPNs(List<ValuePerNeighbour> vpnList) {
+        //    float total = 0;
+        //    foreach (ValuePerNeighbour vpn in vpnList) {
+        //        total += vpn.value;
+        //    }
+        //    foreach (ValuePerNeighbour vpn in vpnList) {
+        //        vpn.value = vpn.value / total;
+        //    }
+        //}
+
         public static NeighbourSpace NeighbourTypeFromRNG() {
             double counter = 0;
             double random = Rnd;
