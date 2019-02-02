@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace GroteOpdrachtV2 {
     public abstract class Neighbour {
         protected Solution s;
-        public abstract void Apply();
+        public abstract void Apply(int[,] paths);
         public abstract int ShadowGain();
         public abstract Neighbour Reverse();
     }
@@ -13,8 +13,8 @@ namespace GroteOpdrachtV2 {
             this.s = s;
             this.op = op;
         }
-        public override void Apply() {
-            s.SetActive(true, op);
+        public override void Apply(int[,] paths) {
+            s.SetActive(paths, true, op);
         }
         public override Neighbour Reverse() {
             return new DisableNeighbour(s, op);
@@ -29,8 +29,8 @@ namespace GroteOpdrachtV2 {
             this.s = s;
             this.op = op;
         }
-        public override void Apply() {
-            s.SetActive(false, op);
+        public override void Apply(int[,] paths) {
+            s.SetActive(paths, false, op);
         }
         public override Neighbour Reverse() {
             return new ActivateNeighbour(s, op);
@@ -59,12 +59,12 @@ namespace GroteOpdrachtV2 {
             oldCycle = op.cycle;
             initialShadow = op.Shadow;
         }
-        public override void Apply() {
+        public override void Apply(int[,] paths) {
             bool active = op.Active;
-            if (active) s.SetActive(false, op);
-            s.RemoveOrder(op);
-            s.AddOrder(op, newPrevious, truck, day, cycle);
-            if (active) s.SetActive(true, op);
+            if (active) s.SetActive(paths, false, op);
+            s.RemoveOrder(op, paths);
+            s.AddOrder(op, newPrevious, paths, truck, day, cycle);
+            if (active) s.SetActive(paths, true, op);
         }
         public override Neighbour Reverse() {
             return new MoveNeighbour(s, op, oldPrevious, oldDay, oldTruck, oldCycle);
@@ -82,14 +82,14 @@ namespace GroteOpdrachtV2 {
             this.op1 = op1;
             this.op2 = op2;
         }
-        public override void Apply() {
+        public override void Apply(int[,] paths) {
             OrderPosition prev1 = op1.Previous;
             Cycle cycle1 = op1.cycle;
             byte day1 = op1.Day, truck1 = op1.truck;
             MoveNeighbour move1 = new MoveNeighbour(s, op1, op2.Previous, op2.Day, op2.truck, op2.cycle);
-            move1.Apply();
+            move1.Apply(paths);
             MoveNeighbour move2 = new MoveNeighbour(s, op2, prev1, day1, truck1, cycle1);
-            move2.Apply();
+            move2.Apply(paths);
             shadow = move1.ShadowGain() + move2.ShadowGain();
         }
         public override Neighbour Reverse() {

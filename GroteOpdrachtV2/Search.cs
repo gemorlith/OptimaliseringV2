@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace GroteOpdrachtV2 {
     public abstract class SearchType {
-        public virtual void Search() { }
+        public virtual void Search(Random rng, int[,] paths, StartSolutionGenerator gen, List<ValuePerNeighbour> neighborOptions, OrderPosition[] allPositions, List<Order> allOrders) { }
         public void Compare(Solution s) {
             if (s.Value < Program.minValue && s.penaltyValue == 0) {
                 Program.minValue = s.Value;
@@ -20,9 +21,10 @@ namespace GroteOpdrachtV2 {
     }
 
     public class Bruteforce : SearchType {
-        public override void Search() {
+        public override void Search(Random rng, int[,] paths, StartSolutionGenerator gen, List<ValuePerNeighbour> neighborOptions, OrderPosition[] allPositions, List<Order> allOrders)
+        {
             for (int i = 0; i < 10000; i++) {
-                Solution s = Program.Generator.Generate();
+                Solution s = gen.Generate(rng, paths, allPositions, allOrders);
                 if (s.Value < Program.minValue) {
                     Program.minValue = s.Value;
                     Util.SaveSolution(s);
@@ -33,20 +35,20 @@ namespace GroteOpdrachtV2 {
 
     public abstract class Localsearch : SearchType {
         protected int counter = 0;
-        public override void Search() {
-            SearchFrom(Program.Generator.Generate());
+        public override void Search(Random rng, int[,] paths, StartSolutionGenerator gen, List<ValuePerNeighbour> neighborOptions, OrderPosition[] allPositions, List<Order> allOrders) {
+            SearchFrom(rng, paths, gen.Generate(rng, paths, allPositions, allOrders), allPositions, neighborOptions);
         }
-        public virtual void SearchFrom(Solution s) {
+        public virtual void SearchFrom(Random rng, int[,] paths, Solution s, OrderPosition[] allPositions, List<ValuePerNeighbour> neighborOptions) {
             Compare(s);
             while (counter < Program.maxIterations) {
                 //Util.Test(s, "Voor TryNeighbour", false);
                 //if (Keyboard.IsKeyDown(Key.Escape)) // Maybe add a safe quit functionality?
-                TryNeighbour(s);
+                TryNeighbour(rng, s, paths, allPositions, neighborOptions);
                 Compare(s);
                 counter++;
                 if (counter % Program.printFreq == 0) {
                     if (counter % (Program.printFreq * Program.saveFreq) == 0) {
-                        Util.Test(s, "occasionalTest", true);
+                        Util.Test(s, paths, allPositions, "occasionalTest", true);
                         Util.SaveSolution(s, "../../Solutions/Temp.txt");
                         Console.WriteLine("Opgeslagen in Temp.txt");
                     }
@@ -60,29 +62,29 @@ namespace GroteOpdrachtV2 {
             return (counter / Program.printFreq) + "/" + Program.MaxPrint + " cr:" + (int)s.Value;
         }
         protected virtual void Reset() { }
-        public abstract void TryNeighbour(Solution s);
+        public abstract void TryNeighbour(Random rng, Solution s, int[,] paths, OrderPosition[] allPositions, List<ValuePerNeighbour> neighborOptions);
     }
 
     public class SimulatedAnnealingMK1 : Localsearch {
         protected double QLeft = 1;
         protected float T = Program.annealingStartT;
 
-        public override void TryNeighbour(Solution s) {
-            NeighbourSpace ns = Util.NeighbourTypeFromRNG();
+        public override void TryNeighbour(Random rng, Solution s, int[,] paths, OrderPosition[] allPositions, List<ValuePerNeighbour> neighborOptions) {
+            NeighbourSpace ns = Util.NeighbourTypeFromRNG(rng, neighborOptions);
             if (ns.IsEmpty(s)) return;
             UpdateQ(s);
-            Neighbour n = ns.RndNeighbour(s);
+            Neighbour n = ns.RndNeighbour(rng, allPositions, s);
             if (n == null) return;
             double oldValue = s.Value;
             double opv = s.penaltyValue;
             double odv = s.declineValue;
             double otv = s.timeValue;
-            n.Apply();
+            n.Apply(paths);
             double gain = s.Value - oldValue;
-            if (gain >= 0f && !ApplyNegativeAnyways(gain)) {
+            if (gain >= 0f && !ApplyNegativeAnyways(rng, gain)) {
                 if (gain != 0f || n.ShadowGain() > 0) {
                     double newValue = s.Value;
-                    n.Reverse().Apply();
+                    n.Reverse().Apply(paths);
                 }
                 //if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
             }
@@ -113,8 +115,8 @@ namespace GroteOpdrachtV2 {
                 s.wrongDayPen *= Program.dayPenInc;
             }
         }
-        private bool ApplyNegativeAnyways(double gain) {
-            double rnd = Util.Rnd;
+        private bool ApplyNegativeAnyways(Random r, double gain) {
+            double rnd = r.NextDouble();
             return (rnd < Math.Exp(-gain / T));
         }
 

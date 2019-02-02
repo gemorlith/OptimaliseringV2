@@ -4,8 +4,6 @@ using System.IO;
 
 namespace GroteOpdrachtV2 {
     class Util {
-        public static double Rnd { get { return Program.random.NextDouble(); } }
-
         public static void SaveSolution(Solution s, string path = "../../Solutions/BestSolution.txt") {
             StreamWriter sw = new StreamWriter(path) { AutoFlush = true };
             int counter = 0;
@@ -50,10 +48,10 @@ namespace GroteOpdrachtV2 {
             sw.Close();
         }
 
-        public static NeighbourSpace NeighbourTypeFromRNG() {
+        public static NeighbourSpace NeighbourTypeFromRNG(Random r, List<ValuePerNeighbour> neighborOptions) {
             double counter = 0;
-            double random = Rnd;
-            foreach (ValuePerNeighbour vpn in Program.neighbourOptions) {
+            double random = r.NextDouble();
+            foreach (ValuePerNeighbour vpn in neighborOptions) {
                 counter += vpn.value;
                 if (counter > random)
                     return vpn.type;
@@ -61,14 +59,14 @@ namespace GroteOpdrachtV2 {
             throw new Exception("Shit's broken: total chance of neighbourType < 1");
         }
 
-        public static List<int> DaysFromRandom(int freq) {
+        public static List<int> DaysFromRandom(Random r, int freq) {
             List<int> days = new List<int>();
             if (freq == 1) {
-                double random = Rnd;
+                double random = r.NextDouble();
                 days.Add((int)(random * 5));
             }
             if (freq == 2) {
-                double random = Rnd;
+                double random = r.NextDouble();
                 int fst = (int)(random * 2);
                 days.Add(fst);
                 days.Add(fst + 3);
@@ -79,7 +77,7 @@ namespace GroteOpdrachtV2 {
                 days.Add(4);
             }
             if (freq == 4) {
-                double random = Rnd;
+                double random = r.NextDouble();
                 int not = (int)(random * 5);
                 for (int i = 0; i < 5; i++) {
                     if (i != not) {
@@ -90,14 +88,14 @@ namespace GroteOpdrachtV2 {
             return days;
         }
 
-        public static List<int> DaysFromPreference(int freq, int preference) {
+        public static List<int> DaysFromPreference(Random r, int freq, int preference) {
             List<int> days = new List<int>();
             if (freq == 1) {
                 days.Add(preference);
             }
             else if (freq == 2) {
                 if (preference == 2) {
-                    double random = Rnd;
+                    double random = r.NextDouble();
                     int fst = (int)(random * 2);
                     days.Add(fst);
                     days.Add(fst + 3);
@@ -113,7 +111,7 @@ namespace GroteOpdrachtV2 {
                 days.Add(4);
             }
             else if (freq == 4) {
-                double random = Rnd;
+                double random = r.NextDouble();
                 int not = (int)(random * 4);
                 if (not >= preference) not++;
                 for (int i = 0; i < 5; i++) {
@@ -125,20 +123,20 @@ namespace GroteOpdrachtV2 {
             return days;
         }
 
-        public static int PathValue(short from, short to) {
+        public static int PathValue(int[,] paths, short from, short to) {
             if (from == to) return 0;
-            return Program.paths[from,to];
+            return paths[from, to];
         }
 
-        public static bool Test(Solution s, string message = "", bool print = true) {
+        public static bool Test(Solution s, int[,] paths, OrderPosition[] allPositions, string message = "", bool print = true) {
             if (print) Console.WriteLine(message);
             bool different = false;
             double tv = 0, dv = 0, tp = 0, wp = 0;
             double[,] locTim = new double[2, 5];
             Dictionary<Cycle, int> cycWe = new Dictionary<Cycle, int>();
-            foreach (OrderPosition op in Program.allPositions) {
+            foreach (OrderPosition op in allPositions) {
                 if (op.Active) {
-                    locTim[op.truck, op.Day] += PathValue(op.order.Location, s.NextActive(op).Location);
+                    locTim[op.truck, op.Day] += PathValue(paths, op.order.Location, s.NextActive(op).Location);
                     locTim[op.truck, op.Day] += op.order.Time;
                     if (!cycWe.ContainsKey(op.cycle)) cycWe.Add(op.cycle, 0);
                     cycWe[op.cycle] += op.order.ContainerVolume;
@@ -156,7 +154,7 @@ namespace GroteOpdrachtV2 {
                 else {
                     act = s.NextActive(c.first);                    
                 }
-                locTim[c.truck, c.day] += PathValue(Program.Home, act.Location);
+                locTim[c.truck, c.day] += PathValue(paths, Program.Home, act.Location);
                 if (act != Program.HomeOrder) locTim[c.truck, c.day] += Program.DisposalTime;
 
                 if (cycWe.ContainsKey(c)) wp += Program.overWeightPenalty * Math.Max(cycWe[c] - Program.MaxCarry, 0);
@@ -243,12 +241,12 @@ namespace GroteOpdrachtV2 {
             return false;
         }
 
-        public static int ShadowPath (OrderPosition op) {
+        public static int ShadowPath (int[,] paths, OrderPosition op) {
             Order nxt = Program.HomeOrder;
             Order prv = Program.HomeOrder;
             if (op.Previous != null) prv = op.Previous.order;
             if (op.Next != null) nxt = op.Next.order;
-            return PathValue(prv.Location,op.order.Location) + PathValue(op.order.Location, nxt.Location);
+            return PathValue(paths, prv.Location,op.order.Location) + PathValue(paths, op.order.Location, nxt.Location);
         }
 
         public static int ShadowDay (OrderPosition op) {
