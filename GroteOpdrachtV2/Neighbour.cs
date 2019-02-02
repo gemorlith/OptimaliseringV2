@@ -4,7 +4,7 @@ namespace GroteOpdrachtV2 {
     public abstract class Neighbour {
         protected Solution s;
         public abstract void Apply();
-        public abstract int shadowGain();
+        public abstract int ShadowGain();
         public abstract Neighbour Reverse();
     }
     public class ActivateNeighbour : Neighbour {
@@ -19,7 +19,7 @@ namespace GroteOpdrachtV2 {
         public override Neighbour Reverse() {
             return new DisableNeighbour(s, op);
         }
-        public override int shadowGain() {
+        public override int ShadowGain() {
             return 0;
         }
     }
@@ -35,7 +35,7 @@ namespace GroteOpdrachtV2 {
         public override Neighbour Reverse() {
             return new ActivateNeighbour(s, op);
         }
-        public override int shadowGain() {
+        public override int ShadowGain() {
             return 0;
         }
     }
@@ -69,7 +69,7 @@ namespace GroteOpdrachtV2 {
         public override Neighbour Reverse() {
             return new MoveNeighbour(s, op, oldPrevious, oldDay, oldTruck, oldCycle);
         }
-        public override int shadowGain() {
+        public override int ShadowGain() {
             return op.Shadow - initialShadow;
         }
     }
@@ -90,12 +90,12 @@ namespace GroteOpdrachtV2 {
             move1.Apply();
             MoveNeighbour move2 = new MoveNeighbour(s, op2, prev1, day1, truck1, cycle1);
             move2.Apply();
-            shadow = move1.shadowGain() + move2.shadowGain();
+            shadow = move1.ShadowGain() + move2.ShadowGain();
         }
         public override Neighbour Reverse() {
             return new SwapNeighbour(s, op2, op1);
         }
-        public override int shadowGain() {
+        public override int ShadowGain() {
             return shadow;
         }
     }

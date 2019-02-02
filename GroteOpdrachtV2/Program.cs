@@ -12,7 +12,7 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = .1f;//150
+        public static float annealingStartT = .0f;//150
         public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         public static SearchType Searcher = new SimulatedAnnealingMK1();
         public const int maxIterations = 130000000;//10000000?
@@ -20,14 +20,14 @@ namespace GroteOpdrachtV2 {
         public const float alpha = 0.995f;//0.99
         public const double overTimePenaltyBase = 8;//?       
         public const double overWeightPenaltyBase = 100;//>15
-        public const double wrongFreqPenaltyBase = 400;//10000
-        public const double wrongDayPentaltyBase = 400;//10000
+        public const double wrongFreqPenaltyBase = 30;//10000
+        public const double wrongDayPentaltyBase = 30;//10000
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
         public const double timePenInc = 1;//crashes if <> 1
         public const double weightPenInc = 1;
-        public const double dayPenInc = 1;
-        public const double freqPenInc = 1;
+        public const double dayPenInc = 1.03;
+        public const double freqPenInc = 1.03;
         #endregion Parameters
 
         #region Constants
@@ -42,7 +42,7 @@ namespace GroteOpdrachtV2 {
         #region Variables
         public static double minValue = double.MaxValue;
         public static double unviableMinValue = double.MaxValue;
-        public static Dictionary<short, DirectionList> paths = new Dictionary<short, DirectionList>();
+        public static int[,] paths = new int[1099,1099];
         public static List<Order> allOrders = new List<Order>();
         public static OrderPosition[] allPositions;
         public static Dictionary<int, Order> orderByID = new Dictionary<int, Order>();
@@ -58,7 +58,8 @@ namespace GroteOpdrachtV2 {
             GetDistances();
             GetOrders();
             neighbourOptions = new List<ValuePerNeighbour> {
-                new ValuePerNeighbour(0.5f, new ToggleSpace()),
+                new ValuePerNeighbour(0.1f, new ToggleSpace()),
+                new ValuePerNeighbour(0.4f, new ActivateSpace()),
                 new ValuePerNeighbour(0.5f, new MoveSpace())
             };
             for (int i = 0; i < 10000; i++) {
@@ -80,21 +81,21 @@ namespace GroteOpdrachtV2 {
             string input;
             string[] splitted;
             sr.ReadLine();
+
             while ((input = sr.ReadLine()) != null) {
                 splitted = input.Split(';');
                 short origin = short.Parse(splitted[0]);
-                if (!paths.ContainsKey(origin)) {
-                    DirectionList d = new DirectionList(origin);
-                    paths.Add(origin, d);
-                }
-                paths[origin].Paths.Add(short.Parse(splitted[1]), int.Parse(splitted[3]));
+                short destination = short.Parse(splitted[1]);
+                int tijdsduur = int.Parse(splitted[3]);
+                paths[origin, destination] = tijdsduur;
             }
+            /*
             foreach (DirectionList dl in paths.Values) {
                 List<KeyValuePair<short, int>> orderedPaths = dl.Paths.OrderBy(x => x.Value).ToList();
                 foreach (KeyValuePair<short, int> kv in orderedPaths) {
                     dl.SortedDistances.Add(kv.Key);
                 }
-            }
+            }*/
         }
 
         static void GetOrders() {
@@ -116,9 +117,6 @@ namespace GroteOpdrachtV2 {
                 Order order = new Order(id, place, pwk, containers, containervolume, time, location);
                 allOrders.Add(order);
                 orderByID.Add(order.ID, order);
-                paths[location].Orders.Add(order);
-                paths[location].XCoord = xCoordinate;
-                paths[location].YCoord = yCoordinate;
             }
             orderByID.Add(0, new Order(0, "WHAT", 0, 0, 0, DisposalTime / 60, Home));
             ResetOps();
@@ -139,23 +137,5 @@ namespace GroteOpdrachtV2 {
             }
             allPositions = opList.ToArray();
         }
-    }
-
-
-    public class DirectionList {
-        public DirectionList(short start) {
-            Start = start;
-            Paths = new Dictionary<short, int>();
-            SortedDistances = new List<short>();
-            Orders = new List<Order>();
-            XCoord = 0;
-            YCoord = 0;
-        }
-        public short Start { get; set; }
-        public Dictionary<short, int> Paths { get; set; }
-        public List<short> SortedDistances { get; set; }
-        public List<Order> Orders { get; set; }
-        public long XCoord { get; set; }
-        public long YCoord { get; set; }
     }
 }

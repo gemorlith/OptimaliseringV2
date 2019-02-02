@@ -22,6 +22,24 @@
             return new ActivateNeighbour(solution, op);
         }
     }
+
+    public class ActivateSpace : NeighbourSpace {
+        public override bool IsEmpty(Solution solution) {
+            return false;
+        }
+        public override Neighbour RndNeighbour(Solution solution) {
+            bool active = false;
+            int count = 0;
+            while(count < 100) {
+                count++;
+                int rnd = (int)(Util.Rnd * Program.allPositions.Length);
+                OrderPosition op = Program.allPositions[rnd];
+                if (op.Active) return new DisableNeighbour(solution, op);
+            }
+            return null;
+        }
+    }
+
     public class MoveSpace : NeighbourSpace {
         public override bool IsEmpty(Solution solution) {
             return false;

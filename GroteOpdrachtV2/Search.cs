@@ -80,7 +80,7 @@ namespace GroteOpdrachtV2 {
             n.Apply();
             double gain = s.Value - oldValue;
             if (gain >= 0f && !ApplyNegativeAnyways(gain)) {
-                if (gain != 0f || n.shadowGain() > 0) {
+                if (gain != 0f || n.ShadowGain() > 0) {
                     double newValue = s.Value;
                     n.Reverse().Apply();
                 }

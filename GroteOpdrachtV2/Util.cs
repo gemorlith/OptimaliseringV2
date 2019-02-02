@@ -127,7 +127,7 @@ namespace GroteOpdrachtV2 {
 
         public static int PathValue(short from, short to) {
             if (from == to) return 0;
-            return Program.paths[from].Paths[to];
+            return Program.paths[from,to];
         }
 
         public static bool Test(Solution s, string message = "", bool print = true) {
