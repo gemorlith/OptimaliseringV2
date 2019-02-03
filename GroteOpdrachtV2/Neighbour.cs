@@ -248,7 +248,7 @@ namespace GroteOpdrachtV2 {
         public override void Apply() {
             for (int i = 0; i < ops.Length; i++) {
                 oldStats[i] = ops[i].Active;
-                if (statuses[i]) if (!ops[i].Active) (new ActivateNeighbour(s, ops[i])).Apply();
+                if (statuses[i]) { if (!ops[i].Active) (new ActivateNeighbour(s, ops[i])).Apply(); }
                 else if (ops[i].Active) (new DisableNeighbour(s, ops[i])).Apply();
             }
         }
@@ -265,6 +265,7 @@ namespace GroteOpdrachtV2 {
         OrderPosition[] ops;
         bool status;
         bool[] oldStats, newStats;
+        SetMultipleNeighbour smn;
         public ToggleOrderNeighbour(Solution s, Order o, bool status) {
             this.s = s;
             this.o = o;
@@ -278,10 +279,12 @@ namespace GroteOpdrachtV2 {
                 oldStats[i] = ops[i].Active;
                 newStats[i] = status;
             }
-            (new SetMultipleNeighbour(s, ops, newStats)).Apply();
+            smn = new SetMultipleNeighbour(s, ops, newStats);
+            smn.Apply();
         }
         public override Neighbour Reverse() {
-            return new SetMultipleNeighbour(s, ops, oldStats);
+            //return new SetMultipleNeighbour(s, ops, oldStats);
+            return smn.Reverse();
         }
         public override int ShadowGain() {
             return 0;
