@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-namespace GroteOpdrachtV2 {
+﻿namespace GroteOpdrachtV2 {
     public abstract class Neighbour {
+        // Template for all Neighbours
         protected Solution s;
         public abstract void Apply();
-        public abstract int ShadowGain();
         public abstract Neighbour Reverse();
+        public abstract int ShadowGain();
     }
     public class ActivateNeighbour : Neighbour {
+        // Neighbour that activates a given OrderPosition
         OrderPosition op;
         public ActivateNeighbour(Solution s, OrderPosition op) {
             this.s = s;
@@ -17,15 +17,16 @@ namespace GroteOpdrachtV2 {
             s.SetActive(true, op);
         }
         public override Neighbour Reverse() {
-            return new DisableNeighbour(s, op);
+            return new DeactivateNeighbour(s, op);
         }
         public override int ShadowGain() {
             return 0;
         }
     }
-    public class DisableNeighbour : Neighbour {
+    public class DeactivateNeighbour : Neighbour {
+        // Neighbour that deactivates a given OrderPosition
         OrderPosition op;
-        public DisableNeighbour(Solution s, OrderPosition op) {
+        public DeactivateNeighbour(Solution s, OrderPosition op) {
             this.s = s;
             this.op = op;
         }
@@ -40,9 +41,8 @@ namespace GroteOpdrachtV2 {
         }
     }
     public class MoveNeighbour : Neighbour {
-        OrderPosition op;
-        OrderPosition newPrevious;
-        OrderPosition oldPrevious;
+        // Neighbour that moves OrderPosition 'op' to after OrderPosition 'newPrevious', at the start of Cycle 'cycle' or at the start of a new Cycle on day 'day' and truck 'truck'
+        OrderPosition op, newPrevious, oldPrevious;
         Cycle cycle, oldCycle;
         byte day, truck, oldDay, oldTruck;
         int initialShadow;
@@ -76,8 +76,8 @@ namespace GroteOpdrachtV2 {
         }
     }
     public class SwapNeighbour : Neighbour {
-        OrderPosition op1;
-        OrderPosition op2;
+        // Neighbour that swaps two OrderPositions
+        OrderPosition op1, op2;
         int shadow;
         public SwapNeighbour(Solution s, OrderPosition op1, OrderPosition op2) {
             this.s = s;
@@ -103,13 +103,12 @@ namespace GroteOpdrachtV2 {
     }
 
     public class Opt2Neighbour : Neighbour {
-        OrderPosition op;
-        int length;
-        OrderPosition lastOp;
+        // Neighbour that mirrors a sequence of consecutive OrderPositions from 'op' with a length of 'length'
+        OrderPosition op, lastOp;
         OrderPosition[] nodes;
-        byte truck;
-        byte day;
         Cycle cycle;
+        int length;
+        byte day, truck;
         bool[] nodeStat;
         public Opt2Neighbour(Solution s, OrderPosition op, int length) {
             this.s = s;
@@ -153,8 +152,8 @@ namespace GroteOpdrachtV2 {
     }
 
     public class MoveAndSetNeighbour : Neighbour {
-        OrderPosition op;
-        OrderPosition newPrevious;
+        // Neighbour that performs the same actions as MoveNeighbour, then activates OrderPosition 'op' if it was not active already
+        OrderPosition op, newPrevious;
         MoveNeighbour mn;
         Cycle cycle;
         bool active, status;
@@ -189,54 +188,8 @@ namespace GroteOpdrachtV2 {
         }
     }
 
-    /*public class MultipleDayNeighbour : Neighbour {
-        Neighbour[] ns;
-        int shadows;
-        OrderPosition[] positions;
-        List<byte> days;
-        public MultipleDayNeighbour(Solution s, OrderPosition[] positions, List<byte> days) {
-            this.s = s;
-            this.positions = positions;
-            this.days = days;
-            ns = new Neighbour[positions.Length];
-        }
-        public override void Apply() {
-            for (int i = 0; i < ns.Length; i++) {
-                //if (ns[i] == null) continue;
-                Neighbour n = Util.MoveToDay(s, positions[i], days[i]);
-                n.Apply();
-                ns[i] = n.Reverse();
-                shadows += ns[i].ShadowGain();
-            }
-        }
-        public override Neighbour Reverse() {
-            return new RevertMultipleNeighbour(ns);
-        }
-        public override int ShadowGain() {
-            return shadows;
-        }
-    }
-
-    public class RevertMultipleNeighbour : Neighbour {
-        Neighbour[] neighbours;
-        public RevertMultipleNeighbour(Neighbour[] ns) {
-            neighbours = ns;
-        }
-        public override void Apply() {
-            for (int i = neighbours.Length - 1; i >= 0; i--) {
-                neighbours[i].Apply();
-            }
-        }
-        public override Neighbour Reverse() {
-            throw new Exception("Don't revert a revert. Please.");
-        }
-
-        public override int ShadowGain() {
-            throw new Exception("This should never be called.");
-        }
-    }*/
-
     public class SetMultipleNeighbour : Neighbour {
+        // Neighbour that activates or deactivates OrderPositions in array 'ops', depending on the corresponding boolean array 'statuses'
         OrderPosition[] ops;
         bool[] statuses, oldStats;
         public SetMultipleNeighbour(Solution s, OrderPosition[] ops, bool[] statuses) {
@@ -249,7 +202,7 @@ namespace GroteOpdrachtV2 {
             for (int i = 0; i < ops.Length; i++) {
                 oldStats[i] = ops[i].Active;
                 if (statuses[i]) { if (!ops[i].Active) (new ActivateNeighbour(s, ops[i])).Apply(); }
-                else if (ops[i].Active) (new DisableNeighbour(s, ops[i])).Apply();
+                else if (ops[i].Active) (new DeactivateNeighbour(s, ops[i])).Apply();
             }
         }
         public override Neighbour Reverse() {
@@ -261,11 +214,12 @@ namespace GroteOpdrachtV2 {
     }
 
     public class ToggleOrderNeighbour : Neighbour {
+        // Neighbour that activates or deactivates all the OrderPositions corresponding to Order 'o', depending on boolean 'status'
         Order o;
         OrderPosition[] ops;
+        SetMultipleNeighbour smn;
         bool status;
         bool[] oldStats, newStats;
-        SetMultipleNeighbour smn;
         public ToggleOrderNeighbour(Solution s, Order o, bool status) {
             this.s = s;
             this.o = o;
@@ -283,7 +237,6 @@ namespace GroteOpdrachtV2 {
             smn.Apply();
         }
         public override Neighbour Reverse() {
-            //return new SetMultipleNeighbour(s, ops, oldStats);
             return smn.Reverse();
         }
         public override int ShadowGain() {

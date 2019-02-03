@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Windows.Input;
 
 namespace GroteOpdrachtV2 {
     public abstract class SearchType {
+        // Template for all SearchTypes
         public virtual void Search() { }
         public void Compare(Solution s) {
             double solVal = s.Value;
+            // Save the found Solution if it is the best so far
             if (solVal < Program.minValue && s.penaltyValue == 0) {
                 Program.minValue = solVal;
                 Console.WriteLine("Better solution found: " + solVal);
                 Util.SaveSolution(s);
             }
+            // Save the found Solution if it is the best so far, yet infeasible
             if (solVal < Program.unviableMinValue && s.penaltyValue >= 0) {
                 Program.unviableMinValue = solVal;
                 if (s.penaltyValue > 0)
@@ -21,6 +23,7 @@ namespace GroteOpdrachtV2 {
     }
 
     public class BruteForce : SearchType {
+        // Never call this.
         public override void Search() {
             for (int i = 0; i < 10000; i++) {
                 Solution s = Program.Generator.Generate();
@@ -33,6 +36,7 @@ namespace GroteOpdrachtV2 {
     }
 
     public abstract class LocalSearch : SearchType {
+        // Template for LocalSearch
         protected long counter = 0;
         public override void Search() {
             SearchFrom(Program.Generator.Generate());
@@ -40,14 +44,11 @@ namespace GroteOpdrachtV2 {
         public virtual void SearchFrom(Solution s) {
             Compare(s);
             while (counter < Program.maxIterations) {
-                //Util.Test(s, "Voor TryNeighbour", false);
-                //if (Keyboard.IsKeyDown(Key.Escape)) // Maybe add a safe quit functionality?
                 TryNeighbour(s);
                 Compare(s);
                 counter++;
                 if (counter % Program.printFreq == 0) {
                     if (counter % (Program.printFreq * Program.saveFreq) == 0) {
-                        Util.Test(s, "occasionalTest", true);
                         Util.SaveSolution(s, "../../Solutions/Temp.txt");
                         Console.WriteLine("Opgeslagen in Temp.txt");
                     }
@@ -64,10 +65,10 @@ namespace GroteOpdrachtV2 {
         public abstract void TryNeighbour(Solution s);
     }
 
-    public class SimulatedAnnealingMK1 : LocalSearch {
+    public class SimulatedAnnealing : LocalSearch {
+        // I think the name of the class speaks for itself
         protected double QLeft = 1;
         protected float T = Program.annealingStartT;
-
         public override void TryNeighbour(Solution s) {
             NeighbourSpace ns = Util.NeighbourTypeFromRNG();
             if (ns.IsEmpty(s)) return;
@@ -85,10 +86,6 @@ namespace GroteOpdrachtV2 {
                     double newValue = s.Value;
                     n.Reverse().Apply();
                 }
-                //if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
-            }
-            else {
-                int kaas = 103765;
             }
         }
         protected override void Reset() {

@@ -4,10 +4,11 @@ using System.IO;
 
 namespace GroteOpdrachtV2 {
     class Util {
+        // Property for getting a random value between 0 and 1
         public static double Rnd { get { return Program.random.NextDouble(); } }
-
+        // Property for getting a random boolean
         public static bool RndBool { get { return Program.random.Next(0, 2) == 1; } }
-
+        // Function for saving a Solution class as a .txt file
         public static void SaveSolution(Solution s, string path = "../../Solutions/BestSolution.txt") {
             StreamWriter sw = new StreamWriter(path) { AutoFlush = true };
             int counter = 0;
@@ -51,17 +52,7 @@ namespace GroteOpdrachtV2 {
             }
             sw.Close();
         }
-
-        public static void NormalizeVPNs(List<ValuePerNeighbour> vpnList) {
-            float total = 0;
-            foreach (ValuePerNeighbour vpn in vpnList) {
-                total += vpn.value;
-            }
-            foreach (ValuePerNeighbour vpn in vpnList) {
-                vpn.value = vpn.value / total;
-            }
-        }
-
+        // Function for getting a random NeighbourSpace from the list of chances initialised in Program.Main()
         public static NeighbourSpace NeighbourTypeFromRNG() {
             double counter = 0;
             double random = Rnd;
@@ -72,88 +63,12 @@ namespace GroteOpdrachtV2 {
             }
             throw new Exception("Shit's broken: total chance of neighbourType < 1");
         }
-
-        public static Neighbour MoveToDay(Solution solution, OrderPosition op, byte day) {
-            for (int i = 0; i < 200; i++) {
-                int ind = (int)(Rnd * Program.allPositions.Length);
-                OrderPosition op2 = Program.allPositions[ind];
-                if (op2.Day == day) {
-                    return new MoveAndSetNeighbour(solution, op, op2, day, op2.truck, op2.cycle, true);
-                }
-            }
-            byte truck = (byte)(Rnd * 2);
-            return new MoveAndSetNeighbour(solution, op, null, day, truck, null, true);
-        }
-
-        public static List<byte> DaysFromRandom(int freq) {
-            List<byte> days = new List<byte>();
-            if (freq == 1) {
-                double random = Rnd;
-                days.Add((byte)(random * 5));
-            }
-            if (freq == 2) {
-                double random = Rnd;
-                byte fst = (byte)(random * 2);
-                days.Add(fst);
-                days.Add((byte)(fst + 3));
-            }
-            if (freq == 3) {
-                days.Add(0);
-                days.Add(2);
-                days.Add(4);
-            }
-            if (freq == 4) {
-                double random = Rnd;
-                byte not = (byte)(random * 5);
-                for (byte i = 0; i < 5; i++) {
-                    if (i != not) {
-                        days.Add(i);
-                    }
-                }
-            }
-            return days;
-        }
-
-        public static List<byte> DaysFromPreference(int freq, byte preference) {
-            List<byte> days = new List<byte>();
-            if (freq == 1) {
-                days.Add(preference);
-            }
-            else if (freq == 2) {
-                if (preference == 2) {
-                    double random = Rnd;
-                    byte fst = (byte)(random * 2);
-                    days.Add(fst);
-                    days.Add((byte)(fst + 3));
-                }
-                else {
-                    days.Add(preference);
-                    days.Add((byte)((preference + 3) % 6));
-                }
-            }
-            else if (freq == 3) {
-                days.Add(0);
-                days.Add(2);
-                days.Add(4);
-            }
-            else if (freq == 4) {
-                double random = Rnd;
-                byte not = (byte)(random * 4);
-                if (not >= preference) not++;
-                for (byte i = 0; i < 5; i++) {
-                    if (i != not) {
-                        days.Add(i);
-                    }
-                }
-            }
-            return days;
-        }
-
+        // Function for getting the time needed to get from the Order at location 'from' to the Order at location 'to'
         public static int PathValue(short from, short to) {
             if (from == to) return 0;
-            return Program.paths[from,to];
+            return Program.paths[from, to];
         }
-
+        // Function for testing whether the values used in computing the score of the current Solution are still correct (only for debugging purposes)
         public static bool Test(Solution s, string message = "", bool print = true) {
             if (print) Console.WriteLine(message);
             bool different = false;
@@ -176,9 +91,9 @@ namespace GroteOpdrachtV2 {
             }
             foreach (Cycle c in s.allCycles) {
                 Order act;
-                if (c.first.Active) act = c.first.order; 
+                if (c.first.Active) act = c.first.order;
                 else {
-                    act = s.NextActive(c.first);                    
+                    act = s.NextActive(c.first);
                 }
                 locTim[c.truck, c.day] += PathValue(Program.Home, act.Location);
                 if (act != Program.HomeOrder) locTim[c.truck, c.day] += Program.DisposalTime;
@@ -201,35 +116,24 @@ namespace GroteOpdrachtV2 {
             }
             return different;
         }
-
+        // Function for checking whether two values are equal, independent of rounding errors
         public static bool TheSameISwear(double one, double theOther) {
             return one < theOther + .5 && one > theOther - .5;
         }
-
-        public static void CheckPrevAndNextForLoops(OrderPosition o) {
-            if (o == null) return;
-            if (o.Previous == o) throw new Exception("AAAAAAAAA");
-            if (o.Next == o) throw new Exception("AAaAAAaAA");
-            if (o.Previous != null) if (o.Previous.Next != o) throw new Exception("AAAAAAAAAA?");
-            if (o.Next != null) if (o.Next.Previous != o) throw new Exception("AAaaAAAaAA?");
-        }
-
+        // Function for finding the increase in FrequencyPenaltyAmounts of an Order
         public static int IncreaseFreqPenAmount(Order o) {
             int last = o.LastFreqPenAmount;
             int newFPA = FreqPenAmount(o.ActiveFreq, o.Frequency);
             o.LastFreqPenAmount = newFPA;
             return newFPA - last;
         }
-
+        // Function for finding 'how wrong' the current frequency of an Order is
         public static int FreqPenAmount(int currentFreq, int desiredFreq) {
-            if (desiredFreq - currentFreq < 0) {
-                int yeet = 0;
-            }
             return Math.Min(currentFreq, desiredFreq - currentFreq);
         }
-
+        // Function for finding the increase in InvalidDayPlanning of an Order
         public static int IncreaseInvalidDayPlanning(Order o) {
-            int last = o.LastValidPlan;
+            int last = o.LastInvalidPlan;
             int[] plannedDays = new int[o.ActiveFreq];
             int d = 0;
             foreach (OrderPosition pos in o.Positions) {
@@ -241,10 +145,10 @@ namespace GroteOpdrachtV2 {
             int newVDP;
             if (InvalidDayPlanning(o, plannedDays)) newVDP = 1;
             else newVDP = 0;
-            o.LastValidPlan = newVDP;
+            o.LastInvalidPlan = newVDP;
             return newVDP - last;
         }
-
+        // Function for finding whether the current planning of an Order is not allowed
         public static bool InvalidDayPlanning(Order o, int[] planning) {
             if (planning.Length == 0) return false;
             byte freq = o.Frequency;
@@ -266,22 +170,37 @@ namespace GroteOpdrachtV2 {
             }
             return false;
         }
-
-        public static int ShadowPath (OrderPosition op) {
+        // Function for determining the path value from op's previous, to op, to op's next
+        public static int ShadowPath(OrderPosition op) {
             Order nxt = Program.HomeOrder;
             Order prv = Program.HomeOrder;
             if (op.Previous != null) prv = op.Previous.order;
             if (op.Next != null) nxt = op.Next.order;
-            return PathValue(prv.Location,op.order.Location) + PathValue(op.order.Location, nxt.Location);
+            return PathValue(prv.Location, op.order.Location) + PathValue(op.order.Location, nxt.Location);
         }
-
-        public static int ShadowDay (OrderPosition op) {
+        // Function for determining whether op can be planned on the day it's currently inactively planned
+        public static int ShadowDay(OrderPosition op) {
             int[] day = new int[1];
             day[0] = op.Day + 1;
             if (InvalidDayPlanning(op.order, day)) {
-                return (int) Program.wrongDayPentalty;
+                return (int)Program.wrongDayPentalty;
             }
             return 0;
+        }
+        // Function to reset OrderPositions before re-generating a Solution
+        public static void ResetOps() {
+            List<OrderPosition> opList = new List<OrderPosition>();
+            foreach (Order o in Program.allOrders) {
+                for (int i = 0; i < o.Frequency; i++) {
+                    o.ActiveFreq = 0;
+                    o.LastFreqPenAmount = 0;
+                    o.LastInvalidPlan = 0;
+                    OrderPosition op = new OrderPosition(o, 0, 0, null, false);
+                    opList.Add(op);
+                    o.Positions[i] = op;
+                }
+            }
+            Program.allPositions = opList.ToArray();
         }
     }
 }
