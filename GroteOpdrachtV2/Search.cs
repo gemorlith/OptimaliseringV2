@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Windows.Input;
 
 namespace GroteOpdrachtV2 {
     public abstract class SearchType {
+        // Template for all SearchTypes
         public virtual void Search() { }
         public void Compare(Solution s) {
             double solVal = s.Value;
+            // Save the found Solution if it is the best so far
             if (solVal < Program.minValue && s.penaltyValue == 0) {
                 Program.minValue = solVal;
                 Console.WriteLine("Better solution found: " + solVal);
                 Util.SaveSolution(s);
             }
+            // Save the found Solution if it is the best so far, yet infeasible
             if (solVal < Program.unviableMinValue && s.penaltyValue >= 0) {
                 Program.unviableMinValue = solVal;
                 if (s.penaltyValue > 0)
@@ -21,6 +23,7 @@ namespace GroteOpdrachtV2 {
     }
 
     public class BruteForce : SearchType {
+        // Never call this.
         public override void Search() {
             for (int i = 0; i < 10000; i++) {
                 Solution s = Program.Generator.Generate();
@@ -33,6 +36,7 @@ namespace GroteOpdrachtV2 {
     }
 
     public abstract class LocalSearch : SearchType {
+        // Template for LocalSearch
         protected long counter = 0;
         public override void Search() {
             SearchFrom(Program.Generator.Generate());
@@ -61,10 +65,10 @@ namespace GroteOpdrachtV2 {
         public abstract void TryNeighbour(Solution s);
     }
 
-    public class SimulatedAnnealingMK1 : LocalSearch {
+    public class SimulatedAnnealing : LocalSearch {
+        // I think the name of the class speaks for itself
         protected double QLeft = 1;
         protected float T = Program.annealingStartT;
-
         public override void TryNeighbour(Solution s) {
             NeighbourSpace ns = Util.NeighbourTypeFromRNG();
             if (ns.IsEmpty(s)) return;

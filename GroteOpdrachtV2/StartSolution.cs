@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace GroteOpdrachtV2 {
     public abstract class StartSolutionGenerator {
+        // Template for all StartSolutionGenerators
         public abstract Solution Generate();
     }
-    
+
     public class EmptyGenerator : StartSolutionGenerator {
+        // Generates a Solution in which none of the orders are carried out
         public override Solution Generate() {
             double declineVal = 0;
             double[,] localtimes = new double[2, 5];
@@ -36,12 +39,13 @@ namespace GroteOpdrachtV2 {
     }
 
     public class ReadGenerator : StartSolutionGenerator {
+        // Generates a Solution class from a saved solution .txt file
         string path;
         public ReadGenerator(string path) {
             this.path = path;
         }
         public override Solution Generate() {
-            System.IO.StreamReader sr = new System.IO.StreamReader(path);
+            StreamReader sr = new StreamReader(path);
             string input;
             string[] inputs;
 
@@ -68,7 +72,7 @@ namespace GroteOpdrachtV2 {
             order.Positions[0].Previous = null;
             localtimes[truck, day] += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
             timeVal += Util.PathValue(Program.HomeOrder.Location, order.Location) + order.Time;
-            
+
             Cycle c = new Cycle(day, truck, 0, order.Positions[0]);
             order.Positions[0].cycle = c;
             order.Positions[0].truck = truck;
@@ -80,12 +84,12 @@ namespace GroteOpdrachtV2 {
 
             while ((input = sr.ReadLine()) != null) {
                 inputs = input.Split(';');
-                truck = (byte) (int.Parse(inputs[0]) - 1);
+                truck = (byte)(int.Parse(inputs[0]) - 1);
                 day = (byte)(int.Parse(inputs[1]) - 1);
                 counter = int.Parse(inputs[2]);
                 nr = int.Parse(inputs[3]);
                 order = Program.orderByID[nr];
-                
+
                 if (nr == 0) {
                     previous.Next = null;
                     cycles[truck, day].Add(c);
@@ -136,9 +140,10 @@ namespace GroteOpdrachtV2 {
                         op.Day = plaatsbaar[index].Day;
                         op.truck = plaatsbaar[index].truck;
                         if (op.Next != null) {
-                            op.Next.Previous = op; 
+                            op.Next.Previous = op;
                         }
-                    } else {
+                    }
+                    else {
                         op.Next = allCycles[index - plaatsbaar.Count].first;
                         op.cycle = allCycles[index - plaatsbaar.Count].first.cycle;
                         op.Day = allCycles[index - plaatsbaar.Count].first.Day;
@@ -156,13 +161,13 @@ namespace GroteOpdrachtV2 {
                 }
             }
             for (int d = 0; d < 5; d++) {
-                for (int t = 0; t < 2; t++){
+                for (int t = 0; t < 2; t++) {
                     if (localtimes[t, d] > Program.MaxTime) {
                         penaltyVal += (localtimes[t, d] - Program.MaxTime) * Program.overTimePenalty;
                     }
                 }
             }
-            
+
             sr.Close();
             return new Solution(timeVal, declineVal, penaltyVal, localtimes, cycles);
         }

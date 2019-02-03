@@ -1,49 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace GroteOpdrachtV2 {
     class Program {
 
         #region Debug
-        public const long printFreq = 100000;
-        public const long saveFreq = 50; //saves solution in temp file every [pasteFreq * saveFreq] neighbours
+        public const long printFreq = 100000; // Prints the current status to the console every [printFreq] Neighbours
+        public const long saveFreq = 50; // Saves the Solution in Temp.txt file every [printFreq * saveFreq] Neighbours
         #endregion Debug
 
         #region Parameters
         public static float annealingStartT = .5f;
         public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         //public static StartSolutionGenerator Generator = new EmptyGenerator();
-        public static SearchType Searcher = new SimulatedAnnealingMK1();
+        public static SearchType Searcher = new SimulatedAnnealing();
         public const long maxIterations = 500000000;
-        public const double annealingQPerNSSize = 16;
+        public const double annealingQPerNSSize = 8;
         public const float alpha = 0.997f;
-        public const double overTimePenaltyBase = 8;       
+        public const double overTimePenaltyBase = 8;
         public const double overWeightPenaltyBase = 80;
         public const double wrongFreqPenaltyBase = 800;
         public const double wrongDayPentaltyBase = 2000;
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
-        public static int complexityEstimate = 20000;
-        public const double timePenMult = 1;//crashes if != 1 due to floating-point errors
+        public static int complexityEstimate = 40000;
+        public const double timePenMult = 1; // Crashes if != 1 due to floating-point errors
         public const double weightPenMult = 1;
         public const double dayPenMult = 1;
         public const double freqPenMult = 1;
         #endregion Parameters
 
         #region Constants
+        public static Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
+        public static long MaxPrint = maxIterations / printFreq;
         public const int MaxCarry = 20000;
         public const int MaxTime = 12 * 60 * 60;
         public const short DisposalTime = 30 * 60;
         public const short Home = 287;
-        public static Order HomeOrder = new Order(0, "", 0, 0, 0, 30, 287);
-        public static long MaxPrint = maxIterations / printFreq;
         #endregion Constants
 
         #region Variables
         public static double minValue = double.MaxValue;
         public static double unviableMinValue = double.MaxValue;
-        public static int[,] paths = new int[1099,1099];
+        public static int[,] paths = new int[1099, 1099];
         public static List<Order> allOrders = new List<Order>();
         public static OrderPosition[] allPositions;
         public static Dictionary<int, Order> orderByID = new Dictionary<int, Order>();
@@ -55,9 +54,10 @@ namespace GroteOpdrachtV2 {
         #endregion Variables
 
         static void Main(string[] args) {
-            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
-            GetDistances();
-            GetOrders();
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US"); // Sets the language to English (differences in use of '.' and ',' -- also ';' and ',')
+            GetDistances(); // Reads the distances file
+            GetOrders(); // Reads the orders file
+            // List of NeighbourSpaces and their corresponding chances
             neighbourOptions = new List<ValuePerNeighbour> {
                 new ValuePerNeighbour(0.001f, new ToggleSpace()),
                 new ValuePerNeighbour(0.32f, new MoveSpace()),
@@ -67,7 +67,7 @@ namespace GroteOpdrachtV2 {
                 new ValuePerNeighbour(0.05f, new ToggleOrderSpace()),
                 new ValuePerNeighbour(0.34f, new ActivateSpace())
             };
-            //Util.NormalizeVPNs(neighbourOptions);
+
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();
                 Console.WriteLine(i);
@@ -75,19 +75,19 @@ namespace GroteOpdrachtV2 {
                 if (annealingStartT < 0.05f) {
                     annealingStartT += 1f;
                 }
-                ResetOps();
+                Util.ResetOps();
             }
-            Console.WriteLine("Done.");
-            Console.ReadLine();
+            Console.WriteLine("Done. You have a lot of patience. Press any key to quit.");
+            Console.ReadKey();
         }
 
         #region Setup
         static void GetDistances() {
+            // Function to read the distances file
             StreamReader sr = new StreamReader("../../Distances.txt");
             string input;
             string[] splitted;
             sr.ReadLine();
-
             while ((input = sr.ReadLine()) != null) {
                 splitted = input.Split(';');
                 short origin = short.Parse(splitted[0]);
@@ -95,16 +95,10 @@ namespace GroteOpdrachtV2 {
                 int tijdsduur = int.Parse(splitted[3]);
                 paths[origin, destination] = tijdsduur;
             }
-            /*
-            foreach (DirectionList dl in paths.Values) {
-                List<KeyValuePair<short, int>> orderedPaths = dl.Paths.OrderBy(x => x.Value).ToList();
-                foreach (KeyValuePair<short, int> kv in orderedPaths) {
-                    dl.SortedDistances.Add(kv.Key);
-                }
-            }*/
         }
 
         static void GetOrders() {
+            //Function to read the orders file
             StreamReader sr = new StreamReader("../../Orders.txt");
             string input;
             string[] splitted;
@@ -125,23 +119,8 @@ namespace GroteOpdrachtV2 {
                 orderByID.Add(order.ID, order);
             }
             orderByID.Add(0, new Order(0, "WHAT", 0, 0, 0, DisposalTime / 60, Home));
-            ResetOps();
+            Util.ResetOps();
         }
         #endregion Setup
-
-        static void ResetOps() {
-            List<OrderPosition> opList = new List<OrderPosition>();
-            foreach (Order o in allOrders) {
-                for (int i = 0; i < o.Frequency; i++) {
-                    o.ActiveFreq = 0;
-                    o.LastFreqPenAmount = 0;
-                    o.LastValidPlan = 0;
-                    OrderPosition op = new OrderPosition(o, 0, 0, null, false);
-                    opList.Add(op);
-                    o.Positions[i] = op;
-                }
-            }
-            allPositions = opList.ToArray();
-        }
     }
 }
