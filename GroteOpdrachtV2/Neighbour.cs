@@ -17,16 +17,16 @@
             s.SetActive(true, op);
         }
         public override Neighbour Reverse() {
-            return new Deactivate(s, op);
+            return new DeactivateNeighbour(s, op);
         }
         public override int ShadowGain() {
             return 0;
         }
     }
-    public class Deactivate : Neighbour {
+    public class DeactivateNeighbour : Neighbour {
         // Neighbour that deactivates a given OrderPosition
         OrderPosition op;
-        public Deactivate(Solution s, OrderPosition op) {
+        public DeactivateNeighbour(Solution s, OrderPosition op) {
             this.s = s;
             this.op = op;
         }
@@ -202,7 +202,7 @@
             for (int i = 0; i < ops.Length; i++) {
                 oldStats[i] = ops[i].Active;
                 if (statuses[i]) { if (!ops[i].Active) (new ActivateNeighbour(s, ops[i])).Apply(); }
-                else if (ops[i].Active) (new Deactivate(s, ops[i])).Apply();
+                else if (ops[i].Active) (new DeactivateNeighbour(s, ops[i])).Apply();
             }
         }
         public override Neighbour Reverse() {

@@ -22,7 +22,7 @@
         public override Neighbour RndNeighbour(Solution solution) {
             int rnd = (int)(Util.Rnd * Program.allPositions.Length);
             OrderPosition op = Program.allPositions[rnd];
-            if (op.Active) return new Deactivate(solution, op);
+            if (op.Active) return new DeactivateNeighbour(solution, op);
             return new ActivateNeighbour(solution, op);
         }
     }
