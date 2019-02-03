@@ -12,20 +12,20 @@ namespace GroteOpdrachtV2 {
         #endregion Debug
 
         #region Parameters
-        public static float annealingStartT = .1f;//150
+        public static float annealingStartT = .5f;
         public static StartSolutionGenerator Generator = new ReadGenerator(".../.../Solutions/BestSolution.txt");
         //public static StartSolutionGenerator Generator = new EmptyGenerator();
         public static SearchType Searcher = new SimulatedAnnealingMK1();
-        public const long maxIterations = 500000000;//10000000?
-        public const double annealingQPerNSSize = 16;//8
-        public const float alpha = 0.998f;//0.99
-        public const double overTimePenaltyBase = 8;//?       
-        public const double overWeightPenaltyBase = 80;//>15
-        public const double wrongFreqPenaltyBase = 400;//10000
-        public const double wrongDayPentaltyBase = 1500;//10000
+        public const long maxIterations = 500000000;
+        public const double annealingQPerNSSize = 16;
+        public const float alpha = 0.997f;
+        public const double overTimePenaltyBase = 8;       
+        public const double overWeightPenaltyBase = 80;
+        public const double wrongFreqPenaltyBase = 800;
+        public const double wrongDayPentaltyBase = 2000;
         public static List<ValuePerNeighbour> neighbourOptions; // Initialised in Main()
         public static int complexityEstimate = 20000;
-        public const double timePenMult = 1;//crashes if <> 1
+        public const double timePenMult = 1;//crashes if != 1 due to floating-point errors
         public const double weightPenMult = 1;
         public const double dayPenMult = 1;
         public const double freqPenMult = 1;
@@ -60,14 +60,14 @@ namespace GroteOpdrachtV2 {
             GetOrders();
             neighbourOptions = new List<ValuePerNeighbour> {
                 new ValuePerNeighbour(0.001f, new ToggleSpace()),
-                new ValuePerNeighbour(0.299f, new ActivateSpace()),
-                new ValuePerNeighbour(0.22f, new MoveSpace()),
+                new ValuePerNeighbour(0.32f, new MoveSpace()),
                 new ValuePerNeighbour(0.1f, new SwapSpace()),
-                new ValuePerNeighbour(0.01f, new Opt2Space()),
+                new ValuePerNeighbour(0.03f, new Opt2Space()),
                 new ValuePerNeighbour(0.17f, new MoveAndActivateSpace()),
-                new ValuePerNeighbour(0.2f, new ToggleOrderSpace())
+                new ValuePerNeighbour(0.05f, new ToggleOrderSpace()),
+                new ValuePerNeighbour(0.34f, new ActivateSpace())
             };
-            Util.NormalizeVPNs(neighbourOptions);
+            //Util.NormalizeVPNs(neighbourOptions);
             for (int i = 0; i < 10000; i++) {
                 Searcher.Search();
                 Console.WriteLine(i);

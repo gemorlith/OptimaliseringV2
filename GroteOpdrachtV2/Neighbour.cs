@@ -188,54 +188,7 @@ namespace GroteOpdrachtV2 {
             return op.Shadow - initialShadow;
         }
     }
-
-    /*public class MultipleDayNeighbour : Neighbour {
-        Neighbour[] ns;
-        int shadows;
-        OrderPosition[] positions;
-        List<byte> days;
-        public MultipleDayNeighbour(Solution s, OrderPosition[] positions, List<byte> days) {
-            this.s = s;
-            this.positions = positions;
-            this.days = days;
-            ns = new Neighbour[positions.Length];
-        }
-        public override void Apply() {
-            for (int i = 0; i < ns.Length; i++) {
-                //if (ns[i] == null) continue;
-                Neighbour n = Util.MoveToDay(s, positions[i], days[i]);
-                n.Apply();
-                ns[i] = n.Reverse();
-                shadows += ns[i].ShadowGain();
-            }
-        }
-        public override Neighbour Reverse() {
-            return new RevertMultipleNeighbour(ns);
-        }
-        public override int ShadowGain() {
-            return shadows;
-        }
-    }
-
-    public class RevertMultipleNeighbour : Neighbour {
-        Neighbour[] neighbours;
-        public RevertMultipleNeighbour(Neighbour[] ns) {
-            neighbours = ns;
-        }
-        public override void Apply() {
-            for (int i = neighbours.Length - 1; i >= 0; i--) {
-                neighbours[i].Apply();
-            }
-        }
-        public override Neighbour Reverse() {
-            throw new Exception("Don't revert a revert. Please.");
-        }
-
-        public override int ShadowGain() {
-            throw new Exception("This should never be called.");
-        }
-    }*/
-
+    
     public class SetMultipleNeighbour : Neighbour {
         OrderPosition[] ops;
         bool[] statuses, oldStats;

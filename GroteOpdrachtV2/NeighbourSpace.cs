@@ -142,24 +142,7 @@ namespace GroteOpdrachtV2 {
             return new MoveAndSetNeighbour(solution, op, prev, day, truck, cycle, true);
         }
     }
-
-    /*public class MoveAllPositionsSpace : NeighbourSpace {
-        public override bool IsEmpty(Solution solution) {
-            return false;
-        }
-        public override Neighbour RndNeighbour(Solution solution) {
-            int ind = (int)(Util.Rnd * Program.allPositions.Length);
-            OrderPosition op = Program.allPositions[ind];
-            OrderPosition[] positions = op.order.Positions;
-            List<byte> days = Util.DaysFromRandom(op.order.Frequency);
-            Neighbour[] ns = new Neighbour[positions.Length];
-            for (int i = 0; i < ns.Length; i++) {
-                ns[i] = Util.MoveToDay(solution, positions[i], days[i]);
-            }
-            return new MultipleDayNeighbour(solution, positions, days);
-        }
-    }*/
-
+    
     public class ToggleOrderSpace : NeighbourSpace {
         public override bool IsEmpty(Solution solution) {
             return false;
