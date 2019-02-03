@@ -40,14 +40,11 @@ namespace GroteOpdrachtV2 {
         public virtual void SearchFrom(Solution s) {
             Compare(s);
             while (counter < Program.maxIterations) {
-                //Util.Test(s, "Voor TryNeighbour", false);
-                //if (Keyboard.IsKeyDown(Key.Escape)) // Maybe add a safe quit functionality?
                 TryNeighbour(s);
                 Compare(s);
                 counter++;
                 if (counter % Program.printFreq == 0) {
                     if (counter % (Program.printFreq * Program.saveFreq) == 0) {
-                        Util.Test(s, "occasionalTest", true);
                         Util.SaveSolution(s, "../../Solutions/Temp.txt");
                         Console.WriteLine("Opgeslagen in Temp.txt");
                     }
@@ -85,10 +82,6 @@ namespace GroteOpdrachtV2 {
                     double newValue = s.Value;
                     n.Reverse().Apply();
                 }
-                //if (s.Value != oldValue) Util.Test(s, "In TryNeighbour", false);
-            }
-            else {
-                int kaas = 103765;
             }
         }
         protected override void Reset() {

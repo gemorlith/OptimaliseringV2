@@ -206,14 +206,6 @@ namespace GroteOpdrachtV2 {
             return one < theOther + .5 && one > theOther - .5;
         }
 
-        public static void CheckPrevAndNextForLoops(OrderPosition o) {
-            if (o == null) return;
-            if (o.Previous == o) throw new Exception("AAAAAAAAA");
-            if (o.Next == o) throw new Exception("AAaAAAaAA");
-            if (o.Previous != null) if (o.Previous.Next != o) throw new Exception("AAAAAAAAAA?");
-            if (o.Next != null) if (o.Next.Previous != o) throw new Exception("AAaaAAAaAA?");
-        }
-
         public static int IncreaseFreqPenAmount(Order o) {
             int last = o.LastFreqPenAmount;
             int newFPA = FreqPenAmount(o.ActiveFreq, o.Frequency);
@@ -222,9 +214,6 @@ namespace GroteOpdrachtV2 {
         }
 
         public static int FreqPenAmount(int currentFreq, int desiredFreq) {
-            if (desiredFreq - currentFreq < 0) {
-                int yeet = 0;
-            }
             return Math.Min(currentFreq, desiredFreq - currentFreq);
         }
 
